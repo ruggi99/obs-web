@@ -254,8 +254,8 @@
     await sendCommand('SetHeartbeat', { enable: true });
     await getStudioMode();
     await updateScenes();
-    await getScreenshot();
-    document.querySelector('#program').classList.remove('is-hidden');
+    //await getScreenshot();
+    //document.querySelector('#program').classList.remove('is-hidden');
   });
 
   obs.on('AuthenticationFailure', async () => {
