@@ -13,7 +13,6 @@
   const obs = new OBSWebSocket();
 
   // Import local components
-  import SceneView from './SceneView.svelte';
 
   onMount(async () => {
     if ('serviceWorker' in navigator) {
@@ -411,9 +410,6 @@
 <section class="section">
   <div class="container">
     {#if connected}
-      {#if isSceneOnTop}
-        <SceneView isStudioMode={isStudioMode} transitionScene={transitionScene}/>
-      {/if}
       {#each sceneChunks as chunk}
         <div class="tile is-ancestor">
           {#each chunk as sc}
@@ -436,9 +432,6 @@
           {/each}
         </div>
       {/each}
-      {#if !isSceneOnTop}
-        <SceneView isStudioMode={isStudioMode} transitionScene={transitionScene}/>
-      {/if}
     {:else}
       <h1 class="subtitle">
         Welcome to
