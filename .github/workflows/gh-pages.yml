@@ -3,7 +3,7 @@ name: github pages
 on:
   push:
     branches:
-      - master
+      - overlay
 
 jobs:
   deploy:
@@ -27,9 +27,30 @@ jobs:
       - run: npm i
       - run: npm run build
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v2.2.2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
-          cname: obs-web.niek.tv
+          # Artifact name
+          name: build # optional, default is artifact
+          # A file, directory or wildcard pattern that describes what to upload
+          path: public/
+          # The desired behavior if no files are found using the provided path.
+      - name: Push directory to Github Pages
+        uses: cpina/github-action-push-to-another-repository@v1.2
+        with:
+          source-directory: 'public'
+          destination-github-username: 'ruggi99'
+          destination-repository-name: 'ruggi99.github.io'
+          user-email: 'ruggi99@github.com'
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+      - name: FTP Deploy to Altervista
+        uses: SamKirkland/FTP-Deploy-Action@4.0.0
+        with:
+          server: ftp.ruggi.altervista.org
+          username: ${{ secrets.ALTERVISTA_US }}
+          password: ${{ secrets.ALTERVISTA_PW }}
+          local-dir: public/
+          server-dir: /OBS-overlay/
+          log-level: standard
+
