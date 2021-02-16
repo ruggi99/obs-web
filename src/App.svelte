@@ -156,6 +156,10 @@
   async function resumeRecording(){
     await sendCommand('ResumeRecording');
   }
+  
+  async function startReplay() {
+    await sendCommand('TriggerHotkeyBySequence', { 'keyId': 'OBS_KEY_S', 'keyModifiers': {'shift': true, 'control': true}})
+  }
 
   async function updateScenes() {
     let data = await sendCommand('GetSceneList');
@@ -432,6 +436,13 @@
           {/each}
         </div>
       {/each}
+      <div class="tile is_ancestor">
+        <div class="tile is-parent">
+          <a on:click={startReplay} class="tile is-child is-info notification">
+            <p class="title has-text-centered is-size-6-mobile">Replay</p>
+          </a>
+        </div>
+      </div>
     {:else}
       <h1 class="subtitle">
         Welcome to
