@@ -65,6 +65,12 @@
       await connect();
     }
   });
+  
+  addEventListener("beforeunload", async () => {
+    if (!connected) return;
+    console.log("Disconnecting due to browser refreshing");
+    await disconnect();
+  })
 
   // State
   let connected,
