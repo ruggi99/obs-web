@@ -16,3 +16,46 @@ $footer-padding: 3rem 1.5rem;
 .rotate {
   animation: rotating 10s linear infinite;
 }
+
+html {
+  overflow: hidden;
+}
+
+.parent {
+  position: absolute;
+  bottom: 0;
+  border: 3px solid white;
+  border-radius: 10px;
+  color: white;
+  margin: 0 calc(50% - 150px) 10px;
+  text-align: center;
+  background-color: rgba(255, 128, 0, 0.75);
+  font-size: 22px;
+  transition: 1s;
+  width: 300px;
+  //clip-path: polygon(0% 0%, 0% 0%, -25% 100%, -25% 100%);
+  -webkit-mask-image: linear-gradient(45deg, rgb(0 0 0 / 0%) 32%, rgb(0 0 0) 34%, rgb(0 0 0) 66%, rgb(0 0 0 / 0%) 68%);
+  -webkit-mask-position: 100% 100%;
+  -webkit-mask-size: 375% 100%;
+}
+
+.toRight {
+  -webkit-mask-position: 0% 0%;
+  -webkit-mask-image: linear-gradient(135deg, rgb(0 0 0 / 0%) 32%, rgb(0 0 0) 34%, rgb(0 0 0) 66%, rgb(0 0 0 / 0%) 68%);
+}
+
+.visible {
+  //clip-path: polygon(0% 0%, 125% 0%, 100% 100%, -25% 100%);
+  -webkit-mask-position: 50% 50%; 
+}
+
+.fine {
+  //clip-path: polygon(125% 0%, 125% 0%, 100% 100%, 100% 100%);
+  -webkit-mask-position: 0% 0%;
+}
+
+.ttitle {
+  font-weight: bold;
+  border-bottom: 3px solid white;
+}
+
