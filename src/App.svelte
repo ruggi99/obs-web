@@ -443,7 +443,7 @@
           {/each}
         </div>
       {/each}
-      <div class="tile is_ancestor">
+      <div class="tile is-ancestor">
         <div class="tile is-parent">
           <a on:click={startReplay} class="tile is-child is-info notification">
             <p class="title has-text-centered is-size-6-mobile">Replay</p>
