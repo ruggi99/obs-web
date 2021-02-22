@@ -3,7 +3,7 @@ name: github pages
 on:
   push:
     branches:
-      - overlay
+      - overlay-ata
 
 jobs:
   deploy:
@@ -51,6 +51,6 @@ jobs:
           username: ${{ secrets.ALTERVISTA_US }}
           password: ${{ secrets.ALTERVISTA_PW }}
           local-dir: public/
-          server-dir: /OBS-overlay/
+          server-dir: /OBS-overlay-ata/
           log-level: standard
 
