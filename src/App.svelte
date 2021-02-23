@@ -166,3 +166,7 @@
   <title>OBS-web - control OBS from anywhere</title>
 </svelte:head>
 
+<div class:visible={timeoutVisible} class:toRight class="parent">
+  <div class="ttitle">{title}</div>
+  <div class="who">{who}</div>
+</div>
