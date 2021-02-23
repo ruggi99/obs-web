@@ -64,7 +64,7 @@
       await connect();
     }
   });
-  
+
   addEventListener("beforeunload", async () => {
     if (!connected) return;
     console.log("Disconnecting due to browser refreshing");
@@ -129,7 +129,6 @@
   // OBS events
   obs.on('ConnectionClosed', () => {
     connected = false;
-    window.history.pushState('', document.title, window.location.pathname + window.location.search); // Remove the hash
     console.log('Connection closed');
   });
 
@@ -142,11 +141,6 @@
     if(compareVersions(version, OBS_WEBSOCKET_LATEST_VERSION) < 0) {
       alert('You are running an outdated OBS-websocket (version ' + version + '), please upgrade to the latest version for full compatibility.');
     }
-    await sendCommand('SetHeartbeat', { enable: true });
-    await getStudioMode();
-    await updateScenes();
-    await getScreenshot();
-    document.querySelector('#program').classList.remove('is-hidden');
   });
 
   obs.on('AuthenticationFailure', async () => {
@@ -159,35 +153,13 @@
     }
   });
 
-  // Heartbeat
-  obs.on('Heartbeat', data => {
-    heartbeat = data;
-  });
-
-  // Scenes
-  obs.on('SwitchScenes', async (data) => {
-    console.log(`New Active Scene: ${data.sceneName}`);
-    await updateScenes();
-  });
 
   obs.on('error', err => {
     console.error('Socket error:', err);
   });
 
-  obs.on('StudioModeSwitched', async (data) => {
-    console.log(`Studio Mode: ${data.newState}`);
-    isStudioMode = data.newState;
-    if (!isStudioMode) {
-      currentPreviewScene = false;
-    } else {
-      await updateScenes();
-    }
   });
 
-  obs.on('PreviewSceneChanged', async(data) => {
-    console.log(`New Preview Scene: ${data.sceneName}`);
-    await updateScenes();
-  });
 </script>
 
 <svelte:head>
