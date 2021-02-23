@@ -4,7 +4,18 @@
   // Imports
   import { onMount } from 'svelte';
   import './style.scss';
-  import { mdiFullscreen, mdiFullscreenExit, mdiBorderVertical, mdiArrowSplitHorizontal, mdiAccessPoint, mdiAccessPointOff, mdiRecord, mdiStop, mdiPause, mdiPlayPause } from '@mdi/js';
+  import {
+    mdiFullscreen,
+    mdiFullscreenExit,
+    mdiBorderVertical,
+    mdiArrowSplitHorizontal,
+    mdiAccessPoint,
+    mdiAccessPointOff,
+    mdiRecord,
+    mdiStop,
+    mdiPause,
+    mdiPlayPause,
+  } from '@mdi/js';
   import Icon from 'mdi-svelte';
   import compareVersions from 'compare-versions';
 
@@ -23,14 +34,13 @@
     if ('wakeLock' in navigator) {
       try {
         wakeLock = await navigator.wakeLock.request('screen');
-          // Re-request when coming back
-          document.addEventListener('visibilitychange', async () => {
-            if (document.visibilityState === 'visible') {
-              wakeLock = await navigator.wakeLock.request('screen');
-            }
-          });
-      }
-      catch(e) { }
+        // Re-request when coming back
+        document.addEventListener('visibilitychange', async () => {
+          if (document.visibilityState === 'visible') {
+            wakeLock = await navigator.wakeLock.request('screen');
+          }
+        });
+      } catch (e) {}
     }
 
     // Listen for fullscreen changes
@@ -49,7 +59,7 @@
     // Hamburger menu
     const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
     if ($navbarBurgers.length > 0) {
-      $navbarBurgers.forEach(el => {
+      $navbarBurgers.forEach((el) => {
         el.addEventListener('click', () => {
           const target = document.getElementById(el.dataset.target);
           el.classList.toggle('is-active');
@@ -65,11 +75,11 @@
     }
   });
 
-  addEventListener("beforeunload", async () => {
+  addEventListener('beforeunload', async () => {
     if (!connected) return;
-    console.log("Disconnecting due to browser refreshing");
+    console.log('Disconnecting due to browser refreshing');
     await disconnect();
-  })
+  });
 
   // State
   let connected,
@@ -144,7 +154,7 @@
     document.location.hash = host; // For easy bookmarking
     const version = (await sendCommand('GetVersion')).obsWebsocketVersion || '';
     console.log('OBS-websocket version:', version);
-    if(compareVersions(version, OBS_WEBSOCKET_LATEST_VERSION) < 0) {
+    if (compareVersions(version, OBS_WEBSOCKET_LATEST_VERSION) < 0) {
       alert('You are running an outdated OBS-websocket (version ' + version + '), please upgrade to the latest version for full compatibility.');
     }
   });
@@ -159,23 +169,21 @@
     }
   });
 
-
-  obs.on('error', err => {
+  obs.on('error', (err) => {
     console.error('Socket error:', err);
   });
 
   async function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   async function timeout(data) {
-    if (timeoutVisible) { // Transizione di chiusura
+    if (timeoutVisible) {
+      // Transizione di chiusura
       timeoutVisible = false;
-      //fine = true;
-      //await sleep(1000);
-      //fine = false;
-    } else { // Transizione di apertura
-      title = "Timeout";
+    } else {
+      // Transizione di apertura
+      title = 'Timeout';
       who = data.who;
       toRight = !toRight;
       timeoutVisible = true;
@@ -183,7 +191,7 @@
   }
 
   async function battuta(data) {
-    title = "Battuta";
+    title = 'Battuta';
     who = `#${data.ptr.jersey} ${data.surname}`;
     toRight = !toRight;
     timeoutVisible = true;
@@ -192,15 +200,11 @@
   }
 
   obs.on('BroadcastCustomMessage', async (data) => {
-    if (data.realm != "overlayer")
-      return;
-    if (data.type == "timeout")
-      return await timeout(data.data);
-    if (data.type == "battuta")
-      return await battuta(data.data);
+    if (data.realm != 'overlayer') return;
+    if (data.data.type == 'timeout') return await timeout(data.data);
+    if (data.data.type == 'battuta') return await battuta(data.data);
     return false;
   });
-
 </script>
 
 <svelte:head>
