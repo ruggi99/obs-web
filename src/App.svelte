@@ -190,9 +190,13 @@
     }
   }
 
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  }
+
   async function battuta(data) {
     title = 'Battuta';
-    who = `#${data.ptr.jersey} ${data.surname}`;
+    who = `#${data.player.ptr.jersey} ${capitalize(data.player.surname)}`;
     toRight = !toRight;
     timeoutVisible = true;
     await sleep(5000);
