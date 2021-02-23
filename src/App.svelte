@@ -95,12 +95,15 @@
   let host,
     password,
     errorMessage = '';
-  let timeoutnamecasa,
-    timeoutnameospiti = '';
-  let playersBolghera = [],
-    playersBolgheraC = [],
-    playersOspiti = [],
-    playersOspitiC = [];
+  let squadra1name,
+    squadra2name = '';
+  let match = {},
+    playersSquadra1 = [],
+    playersSquadra1C = [],
+    playersSquadra2 = [],
+    playersSquadra2C = [];
+  let battutasquadra1 = [],
+    battutasquadra2 = [];
   $: sceneChunks = Array(Math.ceil(scenes.length / 4))
     .fill()
     .map((_, index) => index * 4)
@@ -127,25 +130,46 @@
   }
 
   async function load() {
+    // Squadra 1 sempre Bolghera
+    var squadra1id = 682;
     var stats = await fetch('match.php').then((r) => r.json());
     var names = await fetch('names.json').then((r) => r.json());
     if (!stats) return;
-    var match = stats.match;
-    timeoutnamecasa = names[match.hteam_id];
-    timeoutnameospiti = names[match.vteam_id];
-    var incasa = match.hteam_id == 682;
-    var namecasa = names[match.hteam_id];
-    var nameospiti = names[match.vteam_id];
-    playersBolghera = incasa ? stats.players_h.people : stats.players_v.people;
-    playersOspiti = incasa ? stats.players_v.people : stats.players_h.people;
-    playersBolgheraC = Array(Math.ceil(playersBolghera.length / 4))
+    match = stats.matches[0];
+    var namecasa = names[match.hteam_id] || match.hteam.disp_name2;
+    var nameospiti = names[match.vteam_id] || match.vteam.disp_name2;
+    var incasa = match.hteam_id == squadra1id;
+    var squadra1 = incasa ? match.hteam : match.vteam;
+    var squadra2 = incasa ? match.vteam : match.hteam;
+    var squadra2id = squadra2.id;
+    squadra1name = names[squadra1id] || squadra1.disp_name;
+    squadra2name = names[squadra2id] || squadra2.disp_name;
+    playersSquadra1 = squadra1.players;
+    playersSquadra2 = squadra2.players;
+    playersSquadra1C = createChunk(
+      playersSquadra1.filter((pl) => pl.role_1 != 4 && pl.ptr.visible),
+      4,
+    );
+    playersSquadra2C = createChunk(
+      playersSquadra2.filter((pl) => pl.role_1 != 4 && pl.ptr.visible),
+      4,
+    );
+    rotations();
+    setInterval(rotations, 5000);
+  }
+
+  async function rotations() {
+    var rotation = await fetch(`match_live.php?mid=${match.id}`).then((r) => r.json());
+    battutasquadra1 = playersSquadra1.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1);
+    battutasquadra2 = playersSquadra2.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1);
+    console.log(battutasquadra1);
+  }
+
+  function createChunk(players, quantity) {
+    return Array(Math.ceil(players.length / quantity))
       .fill()
-      .map((_, index) => index * 4)
-      .map((begin) => playersBolghera.slice(begin, begin + 4));
-    playersOspitiC = Array(Math.ceil(playersOspiti.length / 4))
-      .fill()
-      .map((_, index) => index * 4)
-      .map((begin) => playersOspiti.slice(begin, begin + 4));
+      .map((_, index) => index * quantity)
+      .map((begin) => players.slice(begin, begin + quantity));
   }
 
   async function toggleStudioMode() {
@@ -503,16 +527,28 @@
       <div class="tile is-ancestor">
         <div class="tile is-parent">
           <a on:click={timeoutBolghera} class="tile is-child is-info notification">
-            <p class="title has-text-centered is-size-6-mobile">Timeout {timeoutnamecasa}</p>
+            <p class="title has-text-centered is-size-6-mobile">Timeout {squadra1name}</p>
           </a>
         </div>
         <div class="tile is-parent">
           <a on:click={timeoutOspiti} class="tile is-child is-info notification">
-            <p class="title has-text-centered is-size-6-mobile">Timeout {timeoutnameospiti}</p>
+            <p class="title has-text-centered is-size-6-mobile">Timeout {squadra2name}</p>
           </a>
         </div>
       </div>
-      {#each playersBolgheraC as chunk}
+      <div class="tile is-ancestor">
+        <div class="tile is-parent">
+          <a on:click={timeoutBolghera} class="tile is-child is-info notification">
+            <p class="title has-text-centered is-size-6-mobile">Battuta {battutasquadra1.surname}</p>
+          </a>
+        </div>
+        <div class="tile is-parent">
+          <a on:click={timeoutOspiti} class="tile is-child is-info notification">
+            <p class="title has-text-centered is-size-6-mobile">Battuta {battutasquadra2.surname}</p>
+          </a>
+        </div>
+      </div>
+      {#each playersSquadra1C as chunk}
         <div class="tile is-ancestor">
           {#each chunk as pl}
             <div class="tile is-parent">
@@ -524,7 +560,7 @@
           {/each}
         </div>
       {/each}
-      {#each playersOspitiC as chunk}
+      {#each playersSquadra2C as chunk}
         <div class="tile is-ancestor">
           {#each chunk as pl}
             <div class="tile is-parent">
