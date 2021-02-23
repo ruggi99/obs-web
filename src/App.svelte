@@ -127,8 +127,8 @@
   }
 
   async function load() {
-    var stats = await fetch('http://ruggi.altervista.org/OBS-overlay/match.php').then((r) => r.json());
-    var names = await fetch('http://ruggi.altervista.org/OBS-overlay/names.json').then((r) => r.json());
+    var stats = await fetch('match.php').then((r) => r.json());
+    var names = await fetch('names.json').then((r) => r.json());
     if (!stats) return;
     var match = stats.match;
     timeoutnamecasa = names[match.hteam_id];
