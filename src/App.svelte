@@ -85,6 +85,12 @@
   let host,
     password,
     errorMessage = '';
+  let timeoutnamecasa,
+    timeoutnameospiti = '';
+  let playersBolghera = [],
+      playersBolgheraC = [],
+      playersOspiti = [],
+      playersOspitiC = [];
   $: sceneChunks = Array(Math.ceil(scenes.length / 4))
     .fill()
     .map((_, index) => index * 4)
@@ -108,6 +114,28 @@
         document.documentElement.msRequestFullscreen();
       }
     }
+  }
+  
+  async function load() {
+    var stats = await fetch("http://ruggi.altervista.org/OBS-overlay/match.php").then(r => r.json());
+    var names = await fetch("http://ruggi.altervista.org/OBS-overlay/names.json").then(r => r.json());
+    if (!stats) return;
+    var match = stats.match;
+    timeoutnamecasa = names[match.hteam_id];
+    timeoutnameospiti = names[match.vteam_id];
+    var incasa = (match.hteam_id == 682);
+    var namecasa = names[match.hteam_id];
+    var nameospiti = names[match.vteam_id];
+    playersBolghera = incasa ? stats.players_h.people : stats.players_v.people;
+    playersOspiti = incasa ? stats.players_v.people : stats.players_h.people;
+    playersBolgheraC = Array(Math.ceil(playersBolghera.length / 4))
+    .fill()
+    .map((_, index) => index * 4)
+    .map(begin => playersBolghera.slice(begin, begin + 4));
+    playersOspitiC = Array(Math.ceil(playersOspiti.length / 4))
+    .fill()
+    .map((_, index) => index * 4)
+    .map(begin => playersOspiti.slice(begin, begin + 4));
   }
 
   async function toggleStudioMode() {
@@ -166,6 +194,27 @@
   
   async function startReplay() {
     await sendCommand('TriggerHotkeyBySequence', { 'keyId': 'OBS_KEY_S', 'keyModifiers': {'shift': true, 'control': true}})
+  }
+  
+  async function timeoutBolghera() {
+    await timeout(timeoutnamecasa);
+  }
+  
+  async function timeoutOspiti() {
+    await timeout(timeoutnameospiti);
+  }
+  
+  async function timeout(name) {
+    console.log("Timeout " + name);
+    await sendCommand('BroadcastCustomMessage', {realm:"overlayer", data:{type:"timeout", who:name}})
+  }
+  
+  async function showBattuta(e) {
+    var target = event.currentTarget;
+    var id = target.dataset.id;
+    var player = playersBolghera.concat(playersOspiti).find(pl => pl.id == id);
+    obs.send("BroadcastCustomMessage", {realm: "overlayer", data: {type: "battuta", player: player}});
+    console.log(id, target, player);
   }
 
   async function updateScenes() {
@@ -260,8 +309,7 @@
     await sendCommand('SetHeartbeat', { enable: true });
     await getStudioMode();
     await updateScenes();
-    //await getScreenshot();
-    //document.querySelector('#program').classList.remove('is-hidden');
+    await load();
   });
 
   obs.on('AuthenticationFailure', async () => {
@@ -450,6 +498,40 @@
           </a>
         </div>
       </div>
+      <div class="tile is-ancestor">
+        <div class="tile is-parent">
+          <a on:click={timeoutBolghera} class="tile is-child is-info notification">
+            <p class="title has-text-centered is-size-6-mobile">Timeout {timeoutnamecasa}</p>
+          </a>
+        </div>
+        <div class="tile is-parent">
+          <a on:click={timeoutOspiti} class="tile is-child is-info notification">
+            <p class="title has-text-centered is-size-6-mobile">Timeout {timeoutnameospiti}</p>
+          </a>
+        </div>
+      </div>
+      {#each playersBolgheraC as chunk}
+        <div class="tile is-ancestor">
+          {#each chunk as pl}
+            <div class="tile is-parent">
+              <a on:click={showBattuta} class="tile is-child is-info notification" data-id={pl.id}>
+                <p class="title has-text-centered is-size-6-mobile">Battuta {pl.surname}</p>
+              </a>
+            </div>
+          {/each}
+        </div>
+      {/each}
+      {#each playersOspitiC as chunk}
+        <div class="tile is-ancestor">
+          {#each chunk as pl}
+            <div class="tile is-parent">
+              <a on:click={showBattuta} class="tile is-child is-info notification" data-id={pl.id}>
+                <p class="title has-text-centered is-size-6-mobile">Battuta {pl.surname}</p>
+              </a>
+            </div>
+          {/each}
+        </div>
+      {/each}
     {:else}
       <h1 class="subtitle">
         Welcome to
