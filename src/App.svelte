@@ -168,7 +168,7 @@
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  function timeout(data) {
+  async function timeout(data) {
     if (timeoutVisible) { // Transizione di chiusura
       timeoutVisible = false;
       //fine = true;
@@ -182,7 +182,7 @@
     }
   }
 
-  function battuta(data) {
+  async function battuta(data) {
     title = "Battuta";
     who = `#${data.ptr.jersey} ${data.surname}`;
     toRight = !toRight;
@@ -195,9 +195,9 @@
     if (data.realm != "overlayer")
       return;
     if (data.type == "timeout")
-      return timeout(data.data);
+      return await timeout(data.data);
     if (data.type == "battuta")
-      return battuta(data.data);
+      return await battuta(data.data);
     return false;
   });
 
