@@ -164,6 +164,10 @@
     console.error('Socket error:', err);
   });
 
+  async function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   function timeout(data) {
     if (timeoutVisible) { // Transizione di chiusura
       timeoutVisible = false;
