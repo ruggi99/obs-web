@@ -84,38 +84,6 @@
   let host,
     password,
     errorMessage = '';
-  $: sceneChunks = Array(Math.ceil(scenes.length / 4))
-    .fill()
-    .map((_, index) => index * 4)
-    .map(begin => scenes.slice(begin, begin + 4));
-
-  function toggleFullScreen() {
-    if (isFullScreen) {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-      } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
-      }
-    } else {
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-      } else if (document.documentElement.webkitRequestFullscreen) {
-        document.documentElement.webkitRequestFullscreen();
-      } else if (document.documentElement.msRequestFullscreen) {
-        document.documentElement.msRequestFullscreen();
-      }
-    }
-  }
-
-  async function toggleStudioMode() {
-    await sendCommand('ToggleStudioMode');
-  }
-
-  async function switchSceneView() {
-    isSceneOnTop = !isSceneOnTop;
-  }
 
   // OBS functions
   async function sendCommand(command, params) {
