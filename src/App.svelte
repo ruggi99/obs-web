@@ -85,6 +85,12 @@
     password,
     errorMessage = '';
 
+  let title = '';
+  let who = '';
+  let timeoutVisible = false;
+  let fine = false;
+  let toRight = false;
+
   // OBS functions
   async function sendCommand(command, params) {
     try {
@@ -158,6 +164,37 @@
     console.error('Socket error:', err);
   });
 
+  function timeout(data) {
+    if (timeoutVisible) { // Transizione di chiusura
+      timeoutVisible = false;
+      //fine = true;
+      //await sleep(1000);
+      //fine = false;
+    } else { // Transizione di apertura
+      title = "Timeout";
+      who = data.who;
+      toRight = !toRight;
+      timeoutVisible = true;
+    }
+  }
+
+  function battuta(data) {
+    title = "Battuta";
+    who = `#${data.ptr.jersey} ${data.surname}`;
+    toRight = !toRight;
+    timeoutVisible = true;
+    await sleep(5000);
+    timeoutVisible = false;
+  }
+
+  obs.on('BroadcastCustomMessage', async (data) => {
+    if (data.realm != "overlayer")
+      return;
+    if (data.type == "timeout")
+      return timeout(data.data);
+    if (data.type == "battuta")
+      return battuta(data.data);
+    return false;
   });
 
 </script>
