@@ -153,6 +153,36 @@
       4,
     );
     rotations();
+    let punteggio = `https://srv.matchshare.it/stats_test/rest_api/overlay?mid=${match.id}&client_name=volleynetworkitalia&bg=0&uid=613`;
+    let punteggioesteso = `https://srv.matchshare.it/stats_test/rest_api/overlay3?mid=${match.id}&client_name=volleynetworkitalia&bg=0`;
+    let roster = `https://srv.matchshare.it/stats_test/rest_api/overlay2?mid=${match.id}&client_name=volleynetworkitalia`;
+    let punti = `https://srv.matchshare.it/stats_test/rest_api/overlay7?mid=${match.id}&client_name=volleynetworkitalia`;
+    var punteggiocss = `body {background-color: rgba(0, 0, 0, 0); margin: 20px 0 0 20px; overflow: hidden;}
+table {overflow: hidden; background: rgba(255, 128, 0, 0.75); border-color: white;}
+.logos {display: none;}
+.hteam, .vteam {border-left: none; text-align: left;}
+td {color: white; border-color: white;}
+.hteam, .vteam {color: transparent;}
+.hteam::before, .vteam::before {color: white; position: absolute;}
+.hteam::before {content: "${namecasa}";}
+.vteam::before {content: "${nameospiti}";}`;
+    var punteggioestesocss = `body { background-color: rgba(0, 0, 0, 0); margin: 0px 0px; overflow: hidden; }
+table { overflow: hidden; background: rgba(0, 0, 0, 0.75);}
+//td {border-radius: 0;}
+.logos {display: none;}
+.hteam, .vteam {border-left: none; text-align: left;}
+td {color: white;}
+table { --color: rgb(238, 85, 46);}
+table {border-color: var(--color);}
+td { border-color: var(--color);}
+.hteam, .vteam {color:transparent;}
+.hteam::before, .vteam::before {color: white; position: absolute;}
+.hteam::before {content: "${namecasa}";}
+.vteam::before {content: "${nameospiti}";}`;
+    await obs.send('SetSourceSettings', { sourceName: 'Punteggio', sourceSettings: { url: punteggio, css: punteggiocss } });
+    await obs.send('SetSourceSettings', { sourceName: 'Punteggio esteso', sourceSettings: { url: punteggioesteso, css: punteggioestesocss } });
+    await obs.send('SetSourceSettings', { sourceName: 'RosterB', sourceSettings: { url: roster } });
+    await obs.send('SetSourceSettings', { sourceName: 'PuntiB', sourceSettings: { url: punti } });
   }
 
   function createChunk(players, quantity) {
