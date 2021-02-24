@@ -102,8 +102,8 @@
     playersSquadra1C = [],
     playersSquadra2 = [],
     playersSquadra2C = [];
-  let battutasquadra1 = [],
-    battutasquadra2 = [];
+  let battutasquadra1 = {},
+    battutasquadra2 = {};
   let lastFetchTime = 0;
   $: sceneChunks = Array(Math.ceil(scenes.length / 4))
     .fill()
@@ -131,17 +131,14 @@
   }
 
   async function load() {
-    // Squadra 1 sempre Bolghera
-    var squadra1id = 682;
-    var stats = await fetch('match.php').then((r) => r.json());
+    match = await fetch('match.php').then((r) => r.json());
     var names = await fetch('names.json').then((r) => r.json());
-    if (!stats) return;
-    match = stats.matches[0];
+    if (!match) return;
+    var squadra1 = match.incasa ? match.hteam : match.vteam;
+    var squadra2 = match.incasa ? match.vteam : match.hteam;
     var namecasa = names[match.hteam_id] || match.hteam.disp_name2;
     var nameospiti = names[match.vteam_id] || match.vteam.disp_name2;
-    var incasa = match.hteam_id == squadra1id;
-    var squadra1 = incasa ? match.hteam : match.vteam;
-    var squadra2 = incasa ? match.vteam : match.hteam;
+    var squadra1id = squadra1.id;
     var squadra2id = squadra2.id;
     squadra1name = names[squadra1id] || squadra1.disp_name;
     squadra2name = names[squadra2id] || squadra2.disp_name;
@@ -169,8 +166,8 @@
     var rotation = await fetch(`match_live.php?mid=${match.id}`)
       .then((r) => r.json())
       .catch((e) => {});
-    battutasquadra1 = playersSquadra1.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1);
-    battutasquadra2 = playersSquadra2.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1);
+    battutasquadra1 = playersSquadra1.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1) || {};
+    battutasquadra2 = playersSquadra2.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1) || {};
     await schedule_next(rotations, 5000);
   }
 
