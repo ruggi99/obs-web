@@ -104,6 +104,7 @@
     playersSquadra2C = [];
   let battutasquadra1 = [],
     battutasquadra2 = [];
+  let lastFetchTime = 0;
   $: sceneChunks = Array(Math.ceil(scenes.length / 4))
     .fill()
     .map((_, index) => index * 4)
@@ -155,14 +156,6 @@
       4,
     );
     rotations();
-    setInterval(rotations, 5000);
-  }
-
-  async function rotations() {
-    var rotation = await fetch(`match_live.php?mid=${match.id}`).then((r) => r.json());
-    battutasquadra1 = playersSquadra1.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1);
-    battutasquadra2 = playersSquadra2.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1);
-    console.log(battutasquadra1);
   }
 
   function createChunk(players, quantity) {
@@ -170,6 +163,23 @@
       .fill()
       .map((_, index) => index * quantity)
       .map((begin) => players.slice(begin, begin + quantity));
+  }
+
+  async function rotations() {
+    var rotation = await fetch(`match_live.php?mid=${match.id}`)
+      .then((r) => r.json())
+      .catch((e) => {});
+    battutasquadra1 = playersSquadra1.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1);
+    battutasquadra2 = playersSquadra2.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1);
+    await schedule_next(rotations, 5000);
+  }
+
+  async function schedule_next(fn, tm) {
+    var time = 2 * tm - (new Date().getTime() - lastFetchTime);
+    time = Math.max(time, 0);
+    time = Math.min(time, tm);
+    lastFetchTime = new Date().getTime();
+    setTimeout(fn, time);
   }
 
   async function toggleStudioMode() {
@@ -231,11 +241,11 @@
   }
 
   async function timeoutBolghera() {
-    await timeout(timeoutnamecasa);
+    await timeout(squadra1name);
   }
 
   async function timeoutOspiti() {
-    await timeout(timeoutnameospiti);
+    await timeout(squadra2name);
   }
 
   async function timeout(name) {
@@ -244,9 +254,9 @@
   }
 
   async function showBattuta(e) {
-    var target = event.currentTarget;
+    var target = e.currentTarget;
     var id = target.dataset.id;
-    var player = playersBolghera.concat(playersOspiti).find((pl) => pl.id == id);
+    var player = playersSquadra1.concat(playersSquadra2).find((pl) => pl.id == id);
     obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'battuta', player: player } });
     console.log(id, target, player);
   }
@@ -538,23 +548,24 @@
       </div>
       <div class="tile is-ancestor">
         <div class="tile is-parent">
-          <a on:click={timeoutBolghera} class="tile is-child is-info notification">
+          <a on:click={showBattuta} class="tile is-child is-info notification" data-id={battutasquadra1.id}>
             <p class="title has-text-centered is-size-6-mobile">Battuta {battutasquadra1.surname}</p>
           </a>
         </div>
         <div class="tile is-parent">
-          <a on:click={timeoutOspiti} class="tile is-child is-info notification">
+          <a on:click={showBattuta} class="tile is-child is-info notification" data-id={battutasquadra2.id}>
             <p class="title has-text-centered is-size-6-mobile">Battuta {battutasquadra2.surname}</p>
           </a>
         </div>
       </div>
+      <div style="height: 100px;" />
       {#each playersSquadra1C as chunk}
         <div class="tile is-ancestor">
           {#each chunk as pl}
             <div class="tile is-parent">
               <a on:click={showBattuta} class="tile is-child is-info notification" data-id={pl.id}>
                 <p class="title has-text-centered is-size-6-mobile">Battuta</p>
-                <p class="subtitle has-text-centered is-size-6-mobile">{pl.surname}</p>
+                <p class="subtitle has-text-centered is-size-6-mobile">#{pl.jersey} {pl.surname}</p>
               </a>
             </div>
           {/each}
@@ -566,7 +577,7 @@
             <div class="tile is-parent">
               <a on:click={showBattuta} class="tile is-child is-info notification" data-id={pl.id}>
                 <p class="title has-text-centered is-size-6-mobile">Battuta</p>
-                <p class="subtitle has-text-centered is-size-6-mobile">{pl.surname}</p>
+                <p class="subtitle has-text-centered is-size-6-mobile">#{pl.jersey} {pl.surname}</p>
               </a>
             </div>
           {/each}
