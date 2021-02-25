@@ -2,7 +2,7 @@
 
 $footer-padding: 3rem 1.5rem;
 
-@import "~bulma/bulma.sass";
+@import '~bulma/bulma.sass';
 
 @keyframes rotating {
   from {
@@ -15,4 +15,19 @@ $footer-padding: 3rem 1.5rem;
 
 .rotate {
   animation: rotating 10s linear infinite;
+}
+
+.is-child {
+  transition: 0.3s;
+}
+
+.modal-background {
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+}
+
+input[type='range'] {
+  transform: scale(1.5);
+  width: 66.666%;
+  margin: auto;
 }

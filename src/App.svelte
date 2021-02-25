@@ -25,6 +25,7 @@
 
   // Import local components
   import SceneView from './SceneView.svelte';
+  import Custom from './Custom.svelte';
 
   onMount(async () => {
     if ('serviceWorker' in navigator) {
@@ -95,16 +96,6 @@
   let host,
     password,
     errorMessage = '';
-  let squadra1name,
-    squadra2name = '';
-  let match = {},
-    playersSquadra1 = [],
-    playersSquadra1C = [],
-    playersSquadra2 = [],
-    playersSquadra2C = [];
-  let battutasquadra1 = {},
-    battutasquadra2 = {};
-  let lastFetchTime = 0;
   $: sceneChunks = Array(Math.ceil(scenes.length / 4))
     .fill()
     .map((_, index) => index * 4)
@@ -128,85 +119,6 @@
         document.documentElement.msRequestFullscreen();
       }
     }
-  }
-
-  async function load() {
-    match = await fetch('match.php').then((r) => r.json());
-    var names = await fetch('names.json').then((r) => r.json());
-    if (!match) return;
-    var squadra1 = match.incasa ? match.hteam : match.vteam;
-    var squadra2 = match.incasa ? match.vteam : match.hteam;
-    var namecasa = names[match.hteam_id] || match.hteam.disp_name2;
-    var nameospiti = names[match.vteam_id] || match.vteam.disp_name2;
-    var squadra1id = squadra1.id;
-    var squadra2id = squadra2.id;
-    squadra1name = names[squadra1id] || squadra1.disp_name;
-    squadra2name = names[squadra2id] || squadra2.disp_name;
-    playersSquadra1 = squadra1.players;
-    playersSquadra2 = squadra2.players;
-    playersSquadra1C = createChunk(
-      playersSquadra1.filter((pl) => pl.role_1 != 4 && pl.ptr.visible),
-      4,
-    );
-    playersSquadra2C = createChunk(
-      playersSquadra2.filter((pl) => pl.role_1 != 4 && pl.ptr.visible),
-      4,
-    );
-    rotations();
-    let punteggio = `https://srv.matchshare.it/stats_test/rest_api/overlay?mid=${match.id}&client_name=volleynetworkitalia&bg=0&uid=613`;
-    let punteggioesteso = `https://srv.matchshare.it/stats_test/rest_api/overlay3?mid=${match.id}&client_name=volleynetworkitalia&bg=0`;
-    let roster = `https://srv.matchshare.it/stats_test/rest_api/overlay2?mid=${match.id}&client_name=volleynetworkitalia`;
-    let punti = `https://srv.matchshare.it/stats_test/rest_api/overlay7?mid=${match.id}&client_name=volleynetworkitalia`;
-    var punteggiocss = `body {background-color: rgba(0, 0, 0, 0); margin: 20px 0 0 20px; overflow: hidden;}
-table {overflow: hidden; background: rgba(255, 128, 0, 0.75); border-color: white;}
-.logos {display: none;}
-.hteam, .vteam {border-left: none; text-align: left;}
-td {color: white; border-color: white;}
-.hteam, .vteam {color: transparent;}
-.hteam::before, .vteam::before {color: white; position: absolute;}
-.hteam::before {content: "${namecasa}";}
-.vteam::before {content: "${nameospiti}";}`;
-    var punteggioestesocss = `body { background-color: rgba(0, 0, 0, 0); margin: 0px 0px; overflow: hidden; }
-table { overflow: hidden; background: rgba(0, 0, 0, 0.75);}
-//td {border-radius: 0;}
-.logos {display: none;}
-.hteam, .vteam {border-left: none; text-align: left;}
-td {color: white;}
-table { --color: rgb(238, 85, 46);}
-table {border-color: var(--color);}
-td { border-color: var(--color);}
-.hteam, .vteam {color:transparent;}
-.hteam::before, .vteam::before {color: white; position: absolute;}
-.hteam::before {content: "${namecasa}";}
-.vteam::before {content: "${nameospiti}";}`;
-    await obs.send('SetSourceSettings', { sourceName: 'Punteggio', sourceSettings: { url: punteggio, css: punteggiocss } });
-    await obs.send('SetSourceSettings', { sourceName: 'Punteggio esteso', sourceSettings: { url: punteggioesteso, css: punteggioestesocss } });
-    await obs.send('SetSourceSettings', { sourceName: 'RosterB', sourceSettings: { url: roster } });
-    await obs.send('SetSourceSettings', { sourceName: 'PuntiB', sourceSettings: { url: punti } });
-  }
-
-  function createChunk(players, quantity) {
-    return Array(Math.ceil(players.length / quantity))
-      .fill()
-      .map((_, index) => index * quantity)
-      .map((begin) => players.slice(begin, begin + quantity));
-  }
-
-  async function rotations() {
-    var rotation = await fetch(`match_live.php?mid=${match.id}`)
-      .then((r) => r.json())
-      .catch((e) => {});
-    battutasquadra1 = playersSquadra1.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1) || {};
-    battutasquadra2 = playersSquadra2.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1) || {};
-    await schedule_next(rotations, 5000);
-  }
-
-  async function schedule_next(fn, tm) {
-    var time = 2 * tm - (new Date().getTime() - lastFetchTime);
-    time = Math.max(time, 0);
-    time = Math.min(time, tm);
-    lastFetchTime = new Date().getTime();
-    setTimeout(fn, time);
   }
 
   async function toggleStudioMode() {
@@ -261,31 +173,6 @@ td { border-color: var(--color);}
 
   async function resumeRecording() {
     await sendCommand('ResumeRecording');
-  }
-
-  async function startReplay() {
-    await sendCommand('TriggerHotkeyBySequence', { keyId: 'OBS_KEY_S', keyModifiers: { shift: true, control: true } });
-  }
-
-  async function timeoutBolghera() {
-    await timeout(squadra1name);
-  }
-
-  async function timeoutOspiti() {
-    await timeout(squadra2name);
-  }
-
-  async function timeout(name) {
-    console.log('Timeout ' + name);
-    await sendCommand('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'timeout', who: name } });
-  }
-
-  async function showBattuta(e) {
-    var target = e.currentTarget;
-    var id = target.dataset.id;
-    var player = playersSquadra1.concat(playersSquadra2).find((pl) => pl.id == id);
-    obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'battuta', player: player } });
-    console.log(id, target, player);
   }
 
   async function updateScenes() {
@@ -377,10 +264,9 @@ td { border-color: var(--color);}
     if (compareVersions(version, OBS_WEBSOCKET_LATEST_VERSION) < 0) {
       alert('You are running an outdated OBS-websocket (version ' + version + '), please upgrade to the latest version for full compatibility.');
     }
-    await sendCommand('SetHeartbeat', { enable: true });
+    await sendCommand('SetHeartbeat', { enable: production });
     await getStudioMode();
     await updateScenes();
-    await load();
   });
 
   obs.on('AuthenticationFailure', async () => {
@@ -426,6 +312,7 @@ td { border-color: var(--color);}
 
 <svelte:head>
   <title>OBS-web - control OBS from anywhere</title>
+  {#if !production}<base href="http://ruggi.altervista.org/OBS/" />{/if}
 </svelte:head>
 
 <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
@@ -546,7 +433,7 @@ td { border-color: var(--color);}
                   <p class="title has-text-centered is-size-6-mobile">{sc.name}</p>
                 </a>
               {:else}
-                <a on:click={isStudioMode ? setPreview : setScene} class="tile is-child is-info notification">
+                <a on:click={isStudioMode ? setPreview : setScene} class="tile is-child is-danger notification">
                   <p class="title has-text-centered is-size-6-mobile">{sc.name}</p>
                 </a>
               {/if}
@@ -554,62 +441,7 @@ td { border-color: var(--color);}
           {/each}
         </div>
       {/each}
-      <div class="tile is-ancestor">
-        <div class="tile is-parent">
-          <a on:click={startReplay} class="tile is-child is-info notification">
-            <p class="title has-text-centered is-size-6-mobile">Replay</p>
-          </a>
-        </div>
-      </div>
-      <div class="tile is-ancestor">
-        <div class="tile is-parent">
-          <a on:click={timeoutBolghera} class="tile is-child is-info notification">
-            <p class="title has-text-centered is-size-6-mobile">Timeout {squadra1name}</p>
-          </a>
-        </div>
-        <div class="tile is-parent">
-          <a on:click={timeoutOspiti} class="tile is-child is-info notification">
-            <p class="title has-text-centered is-size-6-mobile">Timeout {squadra2name}</p>
-          </a>
-        </div>
-      </div>
-      <div class="tile is-ancestor">
-        <div class="tile is-parent">
-          <a on:click={showBattuta} class="tile is-child is-info notification" data-id={battutasquadra1.id}>
-            <p class="title has-text-centered is-size-6-mobile">Battuta {battutasquadra1.surname}</p>
-          </a>
-        </div>
-        <div class="tile is-parent">
-          <a on:click={showBattuta} class="tile is-child is-info notification" data-id={battutasquadra2.id}>
-            <p class="title has-text-centered is-size-6-mobile">Battuta {battutasquadra2.surname}</p>
-          </a>
-        </div>
-      </div>
-      <div style="height: 100px;" />
-      {#each playersSquadra1C as chunk}
-        <div class="tile is-ancestor">
-          {#each chunk as pl}
-            <div class="tile is-parent">
-              <a on:click={showBattuta} class="tile is-child is-info notification" data-id={pl.id}>
-                <p class="title has-text-centered is-size-6-mobile">Battuta</p>
-                <p class="subtitle has-text-centered is-size-6-mobile">#{pl.jersey} {pl.surname}</p>
-              </a>
-            </div>
-          {/each}
-        </div>
-      {/each}
-      {#each playersSquadra2C as chunk}
-        <div class="tile is-ancestor">
-          {#each chunk as pl}
-            <div class="tile is-parent">
-              <a on:click={showBattuta} class="tile is-child is-info notification" data-id={pl.id}>
-                <p class="title has-text-centered is-size-6-mobile">Battuta</p>
-                <p class="subtitle has-text-centered is-size-6-mobile">#{pl.jersey} {pl.surname}</p>
-              </a>
-            </div>
-          {/each}
-        </div>
-      {/each}
+      <Custom {obs} {connected} {currentScene} />
     {:else}
       <h1 class="subtitle">
         Welcome to
