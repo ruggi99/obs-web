@@ -128,7 +128,7 @@
   async function getMicsVisible() {
     if (!micSources.length) return;
     var res = await obs.send('GetSourceActive', { sourceName: micSources[0].name }).catch((_) => false);
-    if (true) {
+    if (res) {
       for (var micIndex in micSources) {
         micSources[micIndex].visible = (await obs.send('GetSourceActive', { sourceName: micSources[micIndex].name })).sourceActive;
       }
