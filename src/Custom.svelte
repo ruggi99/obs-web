@@ -95,10 +95,10 @@
   .hteam::before, .vteam::before {color: white; position: absolute;}
   .hteam::before {content: "${nameCasa}";}
   .vteam::before {content: "${nameOspiti}";}`;
-    await obs.send('SetSourceSettings', { sourceName: 'Punteggio', sourceSettings: { url: punteggio, css: punteggiocss } });
-    await obs.send('SetSourceSettings', { sourceName: 'Punteggio esteso', sourceSettings: { url: punteggioesteso, css: punteggioestesocss } });
-    await obs.send('SetSourceSettings', { sourceName: 'RosterB', sourceSettings: { url: roster } });
-    await obs.send('SetSourceSettings', { sourceName: 'PuntiB', sourceSettings: { url: punti } });
+    await obs.send('SetSourceSettings', { sourceName: 'Punteggio', sourceSettings: { url: punteggio, css: punteggiocss } }).catch((_) => false);
+    await obs.send('SetSourceSettings', { sourceName: 'Punteggio esteso', sourceSettings: { url: punteggioesteso, css: punteggioestesocss } }).catch((_) => false);
+    await obs.send('SetSourceSettings', { sourceName: 'RosterB', sourceSettings: { url: roster } }).catch((_) => false);
+    await obs.send('SetSourceSettings', { sourceName: 'PuntiB', sourceSettings: { url: punti } }).catch((_) => false);
   }
 
   async function getSourcesList(load) {
