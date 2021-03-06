@@ -166,7 +166,7 @@
     var rotation = await fetch(`match_live.php?mid=${match.id}`)
       .then((r) => r.json())
       .catch((e) => {});
-    if (rotation.length) {
+    if (rotation.length !== 0) {
       battutaSquadra1 = playersSquadra1.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1);
       battutaSquadra2 = playersSquadra2.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1);
       // Potrei non avere il roster, ma comunque avere il giocatore in battuta
