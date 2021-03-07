@@ -27,7 +27,6 @@ $footer-padding: 3rem 1.5rem;
 }
 
 input[type='range'] {
-  transform: scale(1.5);
+  transform: scale(1.5) translate(16.666%, 0);
   width: 66.666%;
-  margin: auto;
 }
