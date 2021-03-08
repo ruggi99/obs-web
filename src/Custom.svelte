@@ -1,30 +1,38 @@
 <script>
   export let obs;
-  export let connected;
   export let currentScene;
+  export let sceneChunks;
+  export let currentPreviewScene;
+  export let isStudioMode;
+  export let setPreview;
+  export let setScene;
   // Imports
   import { onMount } from 'svelte';
-  //import './style.scss';
-  import { mdiVolumeOff, mdiVolumeLow, mdiVolumeMedium, mdiVolumeHigh, mdiRewind, mdiAlphaTBox } from '@mdi/js';
+  import { mdiVolumeOff, mdiVolumeLow, mdiVolumeMedium, mdiVolumeHigh, mdiRewind, mdiBullhorn } from '@mdi/js';
   import Icon from 'mdi-svelte';
 
   onMount(async () => {
     await load();
-    await getSourcesList(true); // true means first time
     Array.from(document.querySelectorAll('.modal-background, .modal-close')).forEach((el) => el.addEventListener('click', () => cancelModal()));
   });
 
   // State
+  let activeTab = 0;
+
   let nameSquadra1,
     nameSquadra2 = '';
-  let match = {},
-    playersSquadra1 = [],
-    playersSquadra1C = [],
-    playersSquadra2 = [],
-    playersSquadra2C = [];
+  let match = {};
+
+  let playersSquadra1 = [],
+    playersSquadra2 = [];
+  let micSources = [];
+  let effectSources = [];
+
   let battutaSquadra1 = undefined,
     battutaSquadra2 = undefined;
+
   let lastFetchTime = 0;
+  let getVolumeLastCalled = 0;
   let forceManual = true;
   let manualeButton = false;
   let modalOpened1 = false;
@@ -33,8 +41,6 @@
   let subtitle = '';
   let lastSelectedId = 0;
   let popupVisible = false;
-  let micSources = [];
-  let getVolumeLastCalled = 0;
   let defaultClasses = 'tile is-child column notification is-size-3 is-size-4-mobile has-text-centered ';
   $: manuale = forceManual || manualeButton;
   $: playersSquadra1C = createChunk(
@@ -46,6 +52,7 @@
     3,
   );
   $: micSourcesC = createChunk(micSources, 2);
+  $: effectSourcesC = createChunk(effectSources, 2);
 
   async function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -59,15 +66,21 @@
     if (!match) return;
     var squadra1 = match.incasa ? match.hteam : match.vteam;
     var squadra2 = match.incasa ? match.vteam : match.hteam;
-    var nameCasa = names[match.hteam_id] || match.hteam.disp_name2;
-    var nameOspiti = names[match.vteam_id] || match.vteam.disp_name2;
     var idSquadra1 = squadra1.id;
     var idSquadra2 = squadra2.id;
     nameSquadra1 = names[idSquadra1] || squadra1.disp_name;
     nameSquadra2 = names[idSquadra2] || squadra2.disp_name;
     playersSquadra1 = squadra1.players;
     playersSquadra2 = squadra2.players;
+    await fixBrowsers(names);
+    await getSourcesList(true); // true means first time
+    await getEffects();
     rotations();
+  }
+
+  async function fixBrowsers(names) {
+    var nameCasa = names[match.hteam_id] || match.hteam.disp_name2;
+    var nameOspiti = names[match.vteam_id] || match.vteam.disp_name2;
     let punteggio = `https://srv.matchshare.it/stats_test/rest_api/overlay?mid=${match.id}&client_name=volleynetworkitalia&bg=0&uid=613`;
     let punteggioesteso = `https://srv.matchshare.it/stats_test/rest_api/overlay3?mid=${match.id}&client_name=volleynetworkitalia&bg=0`;
     let roster = `https://srv.matchshare.it/stats_test/rest_api/overlay2?mid=${match.id}&client_name=volleynetworkitalia`;
@@ -105,8 +118,8 @@
     var res = await obs.send('GetSourcesList');
     var sources = res.sources;
     if (load) {
-      var sourcesToBeMuted = sources.filter((s) => s.typeId != 'wasapi_input_capture');
-      //console.log(sourcesToBeMuted);
+      var sourcesToBeMuted = sources.filter((s) => s.typeId != 'wasapi_input_capture' && s.typeId != 'ffmpeg_source' && s.typeId != 'vlc_source');
+      console.log('Source to be Muted', sourcesToBeMuted);
       sourcesToBeMuted.forEach((s) => obs.send('SetMute', { source: s.name, mute: true }));
     }
     micSources = sources.filter((s) => s.typeId == 'wasapi_input_capture').sort((a, b) => a.name.localeCompare(b.name));
@@ -114,15 +127,12 @@
       await getVolume(mic.name);
     }
     await getMicsVisible();
-    console.log(micSources);
+    console.log('MicSources:', micSources);
   }
 
   async function getVolume(name) {
-    var micIndex = micSources.findIndex((mic) => mic.name == name);
-    if (micIndex < 0) return;
     var res = await obs.send('GetVolume', { source: name, useDecibel: true });
-    micSources[micIndex].volume = res.volume;
-    micSources[micIndex].muted = res.muted;
+    micSources = micSources.map((mic) => (mic.name == name ? { ...mic, volume: Math.round(res.volume), muted: res.muted } : mic));
   }
 
   async function getMicsVisible() {
@@ -152,7 +162,15 @@
         return { ...mic, visible: !!found };
       });
     }
-    console.log(micSources);
+  }
+
+  // Called at startup
+  async function getEffects() {
+    effectSources = (await obs.send('GetSceneItemList', { sceneName: 'Effetti (hidden)' })).sceneItems;
+    for (const eff of effectSources) {
+      await handleEff(eff.sourceName, false);
+    }
+    console.log('effectSources:', effectSources);
   }
 
   function createChunk(players, quantity) {
@@ -255,14 +273,6 @@
     subtitle = `#${player.jersey} ${player.name}`;
   }
 
-  async function customPopup() {
-    obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'custom', title: title, subtitle: subtitle } });
-  }
-
-  async function resetPopup() {
-    obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'reset' } });
-  }
-
   function startReplay() {
     obs.send('TriggerHotkeyBySequence', { keyId: 'OBS_KEY_S', keyModifiers: { shift: true, control: true } });
   }
@@ -295,6 +305,7 @@
       var player = sq1 ? battutaSquadra1 : battutaSquadra2;
     }
     obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'ace', player: player } });
+    handleEff('Hazzard');
     console.log(lastSelectedId, player);
   }
 
@@ -304,19 +315,16 @@
     if (!res) return;
     var player = playersSquadra1.concat(playersSquadra2).find((pl) => pl.id == lastSelectedId);
     obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'muro', player: player } });
+    handleEff('Hazzard'); // Set visible
     console.log(lastSelectedId, player);
   }
 
-  async function handleMic(e) {
-    var parent = this.parentElement;
-    var micIndex = micSources.findIndex((mic) => mic.name == parent.dataset.name);
-    var mic = micSources[micIndex];
-    if (this.nodeName == 'A') {
-      micSources[micIndex].muted = !micSources[micIndex].muted;
-      await obs.send('SetMute', { source: mic.name, mute: mic.muted });
-    } else {
-      await obs.send('SetVolume', { source: mic.name, volume: mic.volume, useDecibel: true });
-    }
+  async function customPopup() {
+    obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'custom', title: title, subtitle: subtitle } });
+  }
+
+  async function resetPopup() {
+    obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'reset' } });
   }
 
   function micIcon(mic) {
@@ -324,6 +332,30 @@
     if (mic.volume < -20) return mdiVolumeLow;
     if (mic.volume < -10) return mdiVolumeMedium;
     return mdiVolumeHigh;
+  }
+
+  async function handleMic(e) {
+    var parent = this.parentElement;
+    var mic = micSources.find((mic) => mic.name == parent.dataset.name);
+    if (this.nodeName == 'A') {
+      await obs.send('SetMute', { source: mic.name, mute: !mic.muted });
+    } else {
+      await obs.send('SetVolume', { source: mic.name, volume: mic.volume, useDecibel: true });
+    }
+  }
+
+  async function volume(sourceName, up) {
+    var mic = micSources.find((mic) => mic.name == sourceName);
+    if (!mic) return;
+    await await obs.send('SetVolume', { source: mic.name, volume: up ? mic.volume + 1.0 : mic.volume - 1.0, useDecibel: true });
+  }
+
+  // visible: Se non specificato toggle
+  async function handleEff(sourceName, visible) {
+    var eff = effectSources.find((eff) => eff.sourceName == sourceName);
+    if (!eff) return;
+    visible = visible ?? !eff.playing;
+    await obs.send('SetSceneItemProperties', { item: sourceName, 'scene-name': 'Effetti (hidden)', visible: visible });
   }
 
   obs.on('BroadcastCustomMessage', async (data) => {
@@ -337,15 +369,43 @@
   });
 
   obs.on('SourceMuteStateChanged', (data) => {
-    var micIndex = micSources.findIndex((mic) => mic.name == data.sourceName);
+    /*var micIndex = micSources.findIndex((mic) => mic.name == data.sourceName);
     if (micIndex < 0) return;
-    micSources[micIndex].muted = data.muted;
+    micSources[micIndex].muted = data.muted;*/
+    micSources = micSources.map(function (mic) {
+      if (mic.name == data.sourceName) return { ...mic, muted: data.muted };
+      return mic;
+    });
   });
 
   obs.on('SourceVolumeChanged', async (data) => {
+    if (data.volumeDb !== undefined) {
+      micSources = micSources.map((mic) => (mic.name == data.sourceName ? { ...mic, volume: Math.round(data.volumeDb) } : mic));
+      return;
+    }
+    console.log('Errore');
     if (new Date().getTime() - getVolumeLastCalled < 200) return;
     await getVolume(data.sourceName);
     getVolumeLastCalled = new Date().getTime();
+  });
+
+  obs.on('SceneItemVisibilityChanged', function (data) {
+    console.log(data);
+    effectSources = effectSources.map(function (eff) {
+      if (data.itemName == eff.sourceName) return { ...eff, playing: data.itemVisible };
+      return eff;
+    });
+  });
+
+  /*obs.on('MediaStarted', async (data) => {
+    effectSources = effectSources.map(function (eff) {
+      if (data.sourceName == eff.sourceName) return { ...eff, playing: true };
+      return eff;
+    });
+  });*/
+
+  obs.on('MediaEnded', async (data) => {
+    handleEff(data.sourceName, false);
   });
 </script>
 
@@ -387,108 +447,175 @@
   </div>
   <button class="modal-close is-large" aria-label="close" />
 </div>
-<div class="tile is-ancestor">
-  <div class="tile is-parent">
-    <a on:click={startReplay} class={defaultClasses + 'is-info'} class:is-success={currentScene?.includes('Replay')}>
-      <span class="icon">
-        <Icon path={mdiRewind} />
-      </span>
-      <span> Replay </span>
-    </a>
-  </div>
+<div class="tabs is-toggle is-fullwidth is-medium">
+  <ul>
+    {#each ['Scene + mic', 'Popup + effetti', 'Pers.'] as text, i}
+      <li class:is-active={activeTab == i}>
+        <a
+          on:click={function (e) {
+            activeTab = i;
+          }}>{text}</a
+        >
+      </li>
+    {/each}
+  </ul>
 </div>
-<div class="tile is-ancestor">
-  <div class="tile is-parent">
-    <a on:click={() => showTimeout(true)} class={defaultClasses + 'is-info'}>
-      Timeout {nameSquadra1}
-    </a>
-  </div>
-  <div class="tile is-parent">
-    <a on:click={() => showTimeout(false)} class={defaultClasses + 'is-info'}>
-      Timeout {nameSquadra2}
-    </a>
-  </div>
-</div>
-<div class="tile is-ancestor">
-  <div class="tile is-parent">
-    <a on:click={() => (manualeButton = !manualeButton)} class:is-warning={manuale} class={defaultClasses + 'is-info'} disabled={forceManual}>
-      {manuale ? 'Manuale' + (forceManual ? ' (forzato)' : '') : 'Automatico'}
-    </a>
-  </div>
-</div>
-<div class="tile is-ancestor">
-  <div class="tile is-parent">
-    <a on:click={() => showBattuta(true)} class={defaultClasses + 'is-primary'}>
-      Battuta {manuale ? '1...' : battutaSquadra1.surname}
-    </a>
-  </div>
-  <div class="tile is-parent">
-    <a on:click={() => showBattuta(false)} class={defaultClasses + 'is-primary'}>
-      Battuta {manuale ? '2...' : battutaSquadra2.surname}
-    </a>
-  </div>
-</div>
-<div class="tile is-ancestor">
-  <div class="tile is-parent">
-    <a on:click={() => showAce(true)} class={defaultClasses + 'is-primary'}>
-      Ace {manuale ? '1...' : battutaSquadra1.surname}
-    </a>
-  </div>
-  <div class="tile is-parent">
-    <a on:click={() => showAce(false)} class={defaultClasses + 'is-primary'}>
-      Ace {manuale ? '2...' : battutaSquadra2.surname}
-    </a>
-  </div>
-</div>
-<div class="tile is-ancestor">
-  <div class="tile is-parent">
-    <a on:click={() => showMuro(true)} class={defaultClasses + 'is-primary'}> Muro 1... </a>
-  </div>
-  <div class="tile is-parent">
-    <a on:click={() => showMuro(false)} class={defaultClasses + 'is-primary'}> Muro 2... </a>
-  </div>
-</div>
-<div class="tile is-ancestor">
-  <div class="tile is-parent">
-    <a on:click={customPopup} class={defaultClasses + 'is-info'}> Personalizzato </a>
-  </div>
-  <div class="tile is-parent">
-    <a on:click={resetPopup} class:is-warning={popupVisible} class={defaultClasses + 'is-info reset'}> Reset </a>
-  </div>
-</div>
-{#each micSourcesC as chunk}
-  <div class="tile is-ancestor">
-    {#each chunk as mic}
-      <div class="tile is-parent is-vertical" style="border-bottom: 1px solid #aaa" data-name={mic.name}>
-        <a on:click={mic.visible ? handleMic : null} class:is-danger={!mic.visible || mic.muted} class:is-light={mic.visible && mic.muted} class={defaultClasses + 'is-info'}>
-          <span class="icon"><Icon path={micIcon(mic)} /></span>
-          <span>{mic.name} </span>
-        </a>
-        <input type="range" min="-30" max="0" bind:value={mic.volume} on:input={handleMic} />
+<div class="container">
+  {#if activeTab == 0}
+    {#each sceneChunks as chunk}
+      <div class="tile is-ancestor">
+        {#each chunk as sc}
+          <div class="tile is-parent">
+            <!-- svelte-ignore a11y-missing-attribute -->
+            {#if currentScene == sc.name}
+              <a class="tile is-child is-primary notification">
+                <p class="title has-text-centered is-size-6-mobile">{sc.name}</p>
+              </a>
+            {:else if currentPreviewScene == sc.name}
+              <a on:click={setScene} class="tile is-child is-warning notification">
+                <p class="title has-text-centered is-size-6-mobile">{sc.name}</p>
+              </a>
+            {:else}
+              <a on:click={isStudioMode ? setPreview : setScene} class="tile is-child is-danger notification">
+                <p class="title has-text-centered is-size-6-mobile">{sc.name}</p>
+              </a>
+            {/if}
+          </div>
+        {/each}
       </div>
     {/each}
-  </div>
-{/each}
-<h3 class="title is-3">Titolo</h3>
-<div class="tile is-ancestor">
-  <div class="tile is-parent">
-    <input class="input" type="text" bind:value={title} />
-  </div>
-</div>
-<h3 class="title is-3">SottoTitolo</h3>
-<div class="content">
-  <button class="button" on:click={() => caricaGiocatore(true)}>Carica Giocatore 1...</button>
-  <button class="button" on:click={() => caricaGiocatore(false)}>Carica Giocatore 2...</button>
-</div>
-<div class="tile is-ancestor">
-  <div class="tile is-parent">
-    <input class="input" type="text" bind:value={subtitle} />
-  </div>
-</div>
-<h3 class="title is-3">Preview</h3>
-<div class="tile is-ancestor">
-  <div class="tile is-parent">
-    <p class="tile is-child">Titolo: {title}</p>
-    <p class="tile is-child">SottoTitolo: {subtitle}</p>
-  </div>
+    {#each micSourcesC as chunk}
+      <div class="tile is-ancestor">
+        {#each chunk as mic}
+          <div class="tile is-parent is-vertical" data-name={mic.name}>
+            <a on:click={mic.visible ? handleMic : null} class:is-danger={!mic.visible || mic.muted} class:is-light={mic.visible && mic.muted} class={defaultClasses + 'is-info'}>
+              <span class="icon"><Icon path={micIcon(mic)} /></span>
+              <span>{mic.name} </span>
+            </a>
+            <div class="columns">
+              <div class="column">
+                <a on:click={() => volume(mic.name, false)} class="tile is-child column notification is-size-4 is-size-6-mobile has-text-centered is-primary">Volume -</a>
+              </div>
+              <div class="column">
+                <a on:click={() => volume(mic.name, true)} class="tile is-child column notification is-size-4 is-size-6-mobile has-text-centered is-primary">Volume +</a>
+              </div>
+            </div>
+            <progress class="progress is-info" value={Math.max(mic.volume + 30, 0) || null} max="30" />
+            <!--<input type="range" min="-30" max="0" bind:value={mic.volume} on:input={handleMic} />-->
+          </div>
+        {/each}
+      </div>
+    {/each}
+  {/if}
+  {#if activeTab == 1}
+    <div class="tile is-ancestor">
+      <div class="tile is-parent">
+        <a on:click={startReplay} class={defaultClasses + 'is-info'} class:is-success={currentScene?.includes('Replay')}>
+          <span class="icon">
+            <Icon path={mdiRewind} />
+          </span>
+          <span> Replay </span>
+        </a>
+      </div>
+    </div>
+    <div class="tile is-ancestor">
+      <div class="tile is-parent">
+        <a on:click={() => showTimeout(true)} class={defaultClasses + 'is-info'}>
+          Timeout {nameSquadra1}
+        </a>
+      </div>
+      <div class="tile is-parent">
+        <a on:click={() => showTimeout(false)} class={defaultClasses + 'is-info'}>
+          Timeout {nameSquadra2}
+        </a>
+      </div>
+    </div>
+    <div class="tile is-ancestor">
+      <div class="tile is-parent">
+        <a on:click={() => (manualeButton = !manualeButton)} class:is-warning={manuale} class={defaultClasses + 'is-info'} disabled={forceManual}>
+          {manuale ? 'Manuale' + (forceManual ? ' (forzato)' : '') : 'Automatico'}
+        </a>
+      </div>
+    </div>
+    <div class="tile is-ancestor">
+      <div class="tile is-parent">
+        <a on:click={() => showBattuta(true)} class={defaultClasses + 'is-primary'}>
+          Battuta {manuale ? '1...' : battutaSquadra1.surname}
+        </a>
+      </div>
+      <div class="tile is-parent">
+        <a on:click={() => showBattuta(false)} class={defaultClasses + 'is-primary'}>
+          Battuta {manuale ? '2...' : battutaSquadra2.surname}
+        </a>
+      </div>
+    </div>
+    <div class="tile is-ancestor">
+      <div class="tile is-parent">
+        <a on:click={() => showAce(true)} class={defaultClasses + 'is-primary'}>
+          Ace {manuale ? '1...' : battutaSquadra1.surname}
+        </a>
+      </div>
+      <div class="tile is-parent">
+        <a on:click={() => showAce(false)} class={defaultClasses + 'is-primary'}>
+          Ace {manuale ? '2...' : battutaSquadra2.surname}
+        </a>
+      </div>
+    </div>
+    <div class="tile is-ancestor">
+      <div class="tile is-parent">
+        <a on:click={() => showMuro(true)} class={defaultClasses + 'is-primary'}> Muro 1... </a>
+      </div>
+      <div class="tile is-parent">
+        <a on:click={() => showMuro(false)} class={defaultClasses + 'is-primary'}> Muro 2... </a>
+      </div>
+    </div>
+    <div class="tile is-ancestor">
+      <div class="tile is-parent">
+        <a on:click={customPopup} class={defaultClasses + 'is-info'}> Personalizzato </a>
+      </div>
+      <div class="tile is-parent">
+        <a on:click={resetPopup} class:is-warning={popupVisible} class={defaultClasses + 'is-info reset'}> Reset </a>
+      </div>
+    </div>
+    {#each effectSourcesC as chunk}
+      <div class="tile is-ancestor">
+        {#each chunk as eff}
+          <div class="tile is-parent" data-name={eff.sourceName}>
+            <a on:click={() => handleEff(eff.sourceName)} class:is-light={!eff.playing} class={defaultClasses + 'is-info'}>
+              <span class="icon"><Icon path={mdiBullhorn} /></span>
+              <span>{eff.sourceName} </span>
+            </a>
+          </div>
+        {/each}
+      </div>
+    {/each}
+  {/if}
+  {#if activeTab == 2}
+    <h3 class="title is-3">Titolo</h3>
+    <div class="content">
+      <button class="button" on:click={() => (title = 'Intervista')}>Intervista</button>
+    </div>
+    <div class="tile is-ancestor">
+      <div class="tile is-parent">
+        <input class="input" type="text" bind:value={title} />
+      </div>
+    </div>
+    <h3 class="title is-3">SottoTitolo</h3>
+    <div class="content">
+      <button class="button" on:click={() => caricaGiocatore(true)}>Carica Giocatore 1...</button>
+      <button class="button" on:click={() => caricaGiocatore(false)}>Carica Giocatore 2...</button>
+    </div>
+    <div class="tile is-ancestor">
+      <div class="tile is-parent">
+        <input class="input" type="text" bind:value={subtitle} />
+      </div>
+    </div>
+    <h3 class="title is-3">Preview</h3>
+    <div class="tile is-ancestor">
+      <div class="tile is-parent">
+        <p class="tile is-child">Titolo: {title}</p>
+        <p class="tile is-child">SottoTitolo: {subtitle}</p>
+      </div>
+    </div>
+  {/if}
 </div>

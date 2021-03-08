@@ -24,7 +24,6 @@
   const obs = new OBSWebSocket();
 
   // Import local components
-  import SceneView from './SceneView.svelte';
   import Custom from './Custom.svelte';
 
   onMount(async () => {
@@ -198,27 +197,9 @@
     isStudioMode = (data && data.studioMode) || false;
   }
 
-  async function getScreenshot() {
-    if (connected) {
-      let data = await sendCommand('TakeSourceScreenshot', { sourceName: currentScene, embedPictureFormat: 'png', width: 960, height: 540 });
-      if (data && data.img) {
-        document.querySelector('#program').src = data.img;
-        document.querySelector('#program').className = '';
-      }
-
-      if (isStudioMode) {
-        let data = await sendCommand('TakeSourceScreenshot', { sourceName: currentPreviewScene, embedPictureFormat: 'png', width: 960, height: 540 });
-        if (data && data.img) {
-          document.querySelector('#preview').src = data.img;
-          document.querySelector('#preview').classList.remove('is-hidden');
-        }
-      }
-    }
-    setTimeout(getScreenshot, 1000);
-  }
-
   async function connect() {
-    host = host || 'localhost:4444';
+    host = host || 'localhost';
+    host = host.split(':').length > 1 ? host : host + ':4444';
     let secure = location.protocol === 'https:' || host.endsWith(':443');
     if (host.indexOf('://') !== -1) {
       let url = new URL(host);
@@ -419,29 +400,7 @@
 <section class="section">
   <div class="container">
     {#if connected}
-      {#each sceneChunks as chunk}
-        <div class="tile is-ancestor">
-          {#each chunk as sc}
-            <div class="tile is-parent">
-              <!-- svelte-ignore a11y-missing-attribute -->
-              {#if currentScene == sc.name}
-                <a class="tile is-child is-primary notification">
-                  <p class="title has-text-centered is-size-6-mobile">{sc.name}</p>
-                </a>
-              {:else if currentPreviewScene == sc.name}
-                <a on:click={setScene} class="tile is-child is-warning notification">
-                  <p class="title has-text-centered is-size-6-mobile">{sc.name}</p>
-                </a>
-              {:else}
-                <a on:click={isStudioMode ? setPreview : setScene} class="tile is-child is-danger notification">
-                  <p class="title has-text-centered is-size-6-mobile">{sc.name}</p>
-                </a>
-              {/if}
-            </div>
-          {/each}
-        </div>
-      {/each}
-      <Custom {obs} {connected} {currentScene} />
+      <Custom {obs} {currentScene} {sceneChunks} {currentPreviewScene} {isStudioMode} {setPreview} {setScene} />
     {:else}
       <h1 class="subtitle">
         Welcome to
