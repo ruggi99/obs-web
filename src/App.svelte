@@ -314,7 +314,7 @@
   <div id="navmenu" class="navbar-menu">
     <div class="navbar-end">
       <div class="navbar-item">
-        <div class="buttons">
+        <div id="nav-buttons" class="buttons">
           <!-- svelte-ignore a11y-missing-attribute -->
           {#if connected}
             <a class="button is-info is-light" disabled>

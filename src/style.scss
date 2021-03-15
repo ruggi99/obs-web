@@ -48,3 +48,22 @@ section {
   min-height: 0;
   overflow-y: auto;
 }
+
+#navmenu,
+#navmenu div {
+  flex: 1 0;
+  min-width: 0;
+}
+
+.navbar-end {
+  flex: 0 1 auto !important;
+}
+
+#nav-buttons {
+  flex-wrap: nowrap;
+}
+
+#nav-buttons :first-child {
+  flex-shrink: 1;
+  min-width: 0;
+}
