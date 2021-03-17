@@ -73,7 +73,7 @@
     playersSquadra1 = squadra1.players;
     playersSquadra2 = squadra2.players;
     await fixBrowsers(names);
-    await getSourcesList(true); // true means first time
+    await getSourcesList();
     await getEffects();
     rotations();
   }
@@ -114,14 +114,9 @@
     await obs.send('SetSourceSettings', { sourceName: 'PuntiB', sourceSettings: { url: punti } }).catch((_) => false);
   }
 
-  async function getSourcesList(load) {
+  async function getSourcesList() {
     var res = await obs.send('GetSourcesList');
     var sources = res.sources;
-    if (load) {
-      var sourcesToBeMuted = sources.filter((s) => s.typeId != 'wasapi_input_capture' && s.typeId != 'ffmpeg_source' && s.typeId != 'vlc_source');
-      console.log('Source to be Muted', sourcesToBeMuted);
-      sourcesToBeMuted.forEach((s) => obs.send('SetMute', { source: s.name, mute: true }));
-    }
     micSources = sources.filter((s) => s.typeId == 'wasapi_input_capture').sort((a, b) => a.name.localeCompare(b.name));
     for (var mic of micSources) {
       await getVolume(mic.name);
