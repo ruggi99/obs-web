@@ -341,7 +341,7 @@
 
   async function volume(sourceName, up) {
     var mic = micSources.find((mic) => mic.name == sourceName);
-    if (!mic) return;
+    if (!mic || (up && mic.volume > -1.0)) return;
     await await obs.send('SetVolume', { source: mic.name, volume: up ? mic.volume + 1.0 : mic.volume - 1.0, useDecibel: true });
   }
 
@@ -483,7 +483,7 @@
       <div class="tile is-ancestor">
         {#each chunk as mic}
           <div class="tile is-parent is-vertical" data-name={mic.name}>
-            <a on:click={mic.visible ? handleMic : null} class:is-danger={!mic.visible || mic.muted} class:is-light={mic.visible && mic.muted} class={defaultClasses + 'is-info'}>
+            <a on:click={handleMic} class:is-danger={!mic.visible || mic.muted} class:is-light={mic.visible && mic.muted} class={defaultClasses + 'is-info'}>
               <span class="icon"><Icon path={micIcon(mic)} /></span>
               <span>{mic.name} </span>
             </a>
