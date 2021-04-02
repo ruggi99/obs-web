@@ -91,7 +91,7 @@
   .hteam, .vteam {border-left: none; text-align: left;}
   td {color: white; border-color: white;}
   td:nth-child(-n+3) { background-color: rgba(0, 0, 0, 0.20); }
-  .hteam, .vteam {color: transparent;}
+  .hteam, .vteam {color: transparent !important;}
   .hteam::before, .vteam::before {color: white; position: absolute;}
   .hteam::before {content: "${nameCasa}";}
   .vteam::before {content: "${nameOspiti}";}`;
@@ -104,7 +104,7 @@
   table { --color: rgb(238, 85, 46);}
   table {border-color: var(--color);}
   td { border-color: var(--color);}
-  .hteam, .vteam {color:transparent;}
+  .hteam, .vteam {color:transparent !important;}
   .hteam::before, .vteam::before {color: white; position: absolute;}
   .hteam::before {content: "${nameCasa}";}
   .vteam::before {content: "${nameOspiti}";}`;
