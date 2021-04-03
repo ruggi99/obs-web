@@ -85,26 +85,26 @@
     let punteggioesteso = `https://srv.matchshare.it/stats_test/rest_api/overlay3?mid=${match.id}&client_name=volleynetworkitalia&bg=0`;
     let roster = `https://srv.matchshare.it/stats_test/rest_api/overlay2?mid=${match.id}&client_name=volleynetworkitalia`;
     let punti = `https://srv.matchshare.it/stats_test/rest_api/overlay7?mid=${match.id}&client_name=volleynetworkitalia`;
-    var punteggiocss = `body {background-color: rgba(0, 0, 0, 0); margin: 20px 0 0 20px; overflow: hidden;}
+    var punteggiocss = `body {background-color: rgba(0, 0, 0, 0); margin: 20px; overflow: hidden;}
   table {overflow: hidden; background: rgba(255, 128, 0, 0.75); border-color: white;}
   .logos {display: none;}
   .hteam, .vteam {border-left: none; text-align: left;}
-  td {color: white; border-color: white;}
+  td {color: white !important; border-color: white;}
   td:nth-child(-n+3) { background-color: rgba(0, 0, 0, 0.20); }
-  .hteam, .vteam {color: transparent !important;}
+  .hteam, .vteam {color: transparent !important; width: 140px;}
   .hteam::before, .vteam::before {color: white; position: absolute;}
   .hteam::before {content: "${nameCasa}";}
   .vteam::before {content: "${nameOspiti}";}`;
-    var punteggioestesocss = `body { background-color: rgba(0, 0, 0, 0); margin: 0px 0px; overflow: hidden; }
+    var punteggioestesocss = `body { background-color: rgba(0, 0, 0, 0); margin: 20px; overflow: hidden; }
   table { overflow: hidden; background: rgba(0, 0, 0, 0.75);}
   .logos {display: none;}
   .hteam, .vteam {border-left: none; text-align: left;}
-  td {color: white;}
+  td {color: white !important;}
   td:nth-child(-n+3) {background-color: rgba(0, 0, 0, 1);}
   table { --color: rgb(238, 85, 46);}
   table {border-color: var(--color);}
   td { border-color: var(--color);}
-  .hteam, .vteam {color:transparent !important;}
+  .hteam, .vteam {color: transparent !important;}
   .hteam::before, .vteam::before {color: white; position: absolute;}
   .hteam::before {content: "${nameCasa}";}
   .vteam::before {content: "${nameOspiti}";}`;
