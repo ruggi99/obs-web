@@ -219,6 +219,8 @@
   async function showPoints() {
     if (points.length) {
       obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'punti', points: points } });
+    } else {
+      console.log('no points');
     }
   }
 
