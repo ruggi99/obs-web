@@ -25,6 +25,7 @@
 
   let playersSquadra1 = [],
     playersSquadra2 = [];
+  let points = [];
   let micSources = [];
   let effectSources = [];
 
@@ -75,7 +76,8 @@
     await fixBrowsers(names);
     await getSourcesList();
     await getEffects();
-    rotations();
+    await rotations();
+    await showPoints();
   }
 
   async function fixBrowsers(names) {
@@ -176,9 +178,10 @@
   }
 
   async function rotations() {
-    var rotation = await fetch(`match_live.php?mid=${match.id}`)
+    var live = await fetch(`match_live.php?mid=${match.id}`)
       .then((r) => r.json())
       .catch((e) => {});
+    var rotation = live.rotation;
     if (rotation.length !== 0) {
       battutaSquadra1 = playersSquadra1.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1);
       battutaSquadra2 = playersSquadra2.find((pl) => pl.id == rotation.idh1 || pl.id == rotation.idv1);
@@ -200,6 +203,7 @@
       console.log('Rotazione vuota');
       forceManual = true;
     }
+    points = live.points;
     if (!production) return;
     await schedule_next(rotations, 5000);
   }
@@ -210,6 +214,13 @@
     time = Math.min(time, tm);
     lastFetchTime = new Date().getTime();
     setTimeout(fn, time);
+  }
+
+  async function showPoints() {
+    if (points.length) {
+      obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'punti', points: points } });
+    }
+    setTimeout(showPoints, 5 * 60 * 1000); // 5 minuti
   }
 
   async function openModal1() {

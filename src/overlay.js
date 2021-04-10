@@ -5,14 +5,15 @@ const obs = new OBSWebSocket();
 import './overlay.css';
 
 var parent = undefined;
+var parentP = undefined;
 var title = undefined;
 var subtitle = undefined;
 
 var timeoutVisible = false;
-var toRight = false;
 
 addEventListener('load', async function () {
   obs.connect({ address: 'localhost:4444' });
+  document.body.appendChild(document.createElement('div'));
   parent = document.createElement('div');
   parent.className = 'parent';
   title = document.createElement('div');
@@ -25,6 +26,18 @@ addEventListener('load', async function () {
   title.textContent = 'Title';
   subtitle.textContent = 'SottoTitolo';
   document.title = 'Overlay';
+  parentP = document.createElement('div');
+  parentP.className = 'parentP';
+  for (var i = 0; i < 2; i++) {
+    var child = document.createElement('div');
+    parentP.appendChild(child);
+    for (var j = 0; j < 4; j++) {
+      var child2 = document.createElement('div');
+      //child2.textContent = '10 Cognome Nome';
+      child.appendChild(child2);
+    }
+  }
+  document.body.appendChild(parentP);
 });
 
 function toggleVisibility(val) {
@@ -34,6 +47,13 @@ function toggleVisibility(val) {
 
 function caricaGiocatore(player) {
   return `#${player.jersey} ${capitalize(player.name) || ''}`;
+}
+
+function createChunk(players, quantity) {
+  return Array(Math.ceil(players.length / quantity))
+    .fill()
+    .map((_, index) => index * quantity)
+    .map((begin) => players.slice(begin, begin + quantity));
 }
 
 async function sleep(ms) {
@@ -95,6 +115,33 @@ async function reset(data) {
   toggleVisibility(false);
 }
 
+async function punti(data) {
+  if (!data.points.length) return;
+  var points = createChunk(data.points, 4);
+  console.log(points);
+  for (var i = 0; i < 2; i++) {
+    for (var j = 0; j < 4; j++) {
+      parentP.children[i].children[j].textContent = '';
+      parentP.children[i].children[j].className = '';
+    }
+  }
+  for (var i = 0; i < Math.min(points.length, 2); i++) {
+    for (var j = 0; j < points[i].length; j++) {
+      parentP.children[i].children[j].textContent = `${points[i][j].punti} ${points[i][j].surname} ${points[i][j].firstname}`;
+      if (points[i][j].disp_name2 == 'Bolghera') {
+        parentP.children[i].children[j].className = 'bold';
+      }
+    }
+  }
+  parentP.classList.add('visible');
+  await sleep(5000);
+  parentP.classList.add('secondo');
+  await sleep(5000);
+  parentP.classList.remove('visible');
+  await sleep(1000);
+  parentP.classList.remove('secondo');
+}
+
 obs.on('BroadcastCustomMessage', async (data) => {
   if (data.realm != 'overlayer') return;
   data = data.data;
@@ -111,5 +158,11 @@ obs.on('BroadcastCustomMessage', async (data) => {
       return await custom(data);
     case 'reset':
       return await reset(data);
+    case 'punti':
+      return await punti(data);
   }
 });
+
+//setTimeout(showPunti, 2000);
+
+//setTimeout(showPunti, 10 * 60 * 1000); // 10 minuti

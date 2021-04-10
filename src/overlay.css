@@ -1,49 +1,89 @@
 html {
   overflow: hidden;
   font-family: 'Segoe UI';
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: white;
+}
+
+body > * {
+  flex: 0 0 auto;
+}
+
+body > div:nth-of-type(1) {
+  flex: 1 1 auto;
+  height: 100%;
 }
 
 .parent {
-  position: absolute;
-  bottom: 0;
   border: 3px solid white;
   border-radius: 10px;
   color: white;
-  margin: 0 calc(50% - 150px) -150px;
+  margin: 0 calc(50% - 150px) -100px;
   text-align: center;
   background-color: rgba(255, 128, 0, 0.75);
   font-size: 22px;
   transition: 0.3s;
   width: 300px;
   transition-timing-function: cubic-bezier(0.5, -0.3, 0.8, 0.5);
-  //clip-path: polygon(0% 0%, 0% 0%, -25% 100%, -25% 100%);
-  //-webkit-mask-image: linear-gradient(45deg, rgb(0 0 0 / 0%) 32%, rgb(0 0 0) 34%, rgb(0 0 0) 66%, rgb(0 0 0 / 0%) 68%);
-  //-webkit-mask-position: 100% 100%;
-  //-webkit-mask-size: 375% 100%;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%);
+  z-index: -1;
 }
 
 .parent > * {
   padding: 0.2rem;
 }
 
-.toRight {
-  //-webkit-mask-position: 0% 0%;
-  //-webkit-mask-image: linear-gradient(135deg, rgb(0 0 0 / 0%) 32%, rgb(0 0 0) 34%, rgb(0 0 0) 66%, rgb(0 0 0 / 0%) 68%);
-}
-
-.visible {
-  //clip-path: polygon(0% 0%, 125% 0%, 100% 100%, -25% 100%);
-  //-webkit-mask-position: 50% 50%;
+.parent.visible {
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
   transition-timing-function: cubic-bezier(0.2, 0.5, 0.5, 1.3);
   margin-bottom: 10px;
-}
-
-.fine {
-  //clip-path: polygon(125% 0%, 125% 0%, 100% 100%, 100% 100%);
-  //-webkit-mask-position: 0% 0%;
 }
 
 .title {
   font-weight: bold;
   border-bottom: 3px solid white;
+}
+
+.parentP {
+  height: 40px;
+  overflow: hidden;
+}
+
+.parentP,
+.parentP > * {
+  transition: 0.7s;
+}
+
+.parentP:not(.visible) {
+  margin-bottom: -40px;
+}
+
+.parentP.secondo > :first-child {
+  margin-top: -40px;
+}
+
+.parentP > * {
+  display: flex;
+  background-color: rgba(255, 128, 0, 0.75);
+  font-size: 22px;
+  height: 40px;
+}
+
+.parentP > * > * {
+  width: 100%;
+  text-align: center;
+  padding: 0.2rem;
+  border: solid white;
+  border-width: 0 1px;
+}
+
+.bold {
+  font-weight: bold;
 }
