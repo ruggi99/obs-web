@@ -84,6 +84,14 @@ body > div:nth-of-type(1) {
   border-width: 0 1px;
 }
 
+.parentP > * > :first-child {
+  border-left: none;
+}
+
+.parentP > * :last-child {
+  border-right: none;
+}
+
 .bold {
   font-weight: bold;
 }

@@ -49,6 +49,10 @@ function caricaGiocatore(player) {
   return `#${player.jersey} ${capitalize(player.name) || ''}`;
 }
 
+function caricaGiocatore2(points) {
+  return `${points.punti} ${capitalize(points.surname + ' ' + points.firstname)}`;
+}
+
 function createChunk(players, quantity) {
   return Array(Math.ceil(players.length / quantity))
     .fill()
@@ -118,7 +122,6 @@ async function reset(data) {
 async function punti(data) {
   if (!data.points.length) return;
   var points = createChunk(data.points, 4);
-  console.log(points);
   for (var i = 0; i < 2; i++) {
     for (var j = 0; j < 4; j++) {
       parentP.children[i].children[j].textContent = '';
@@ -127,7 +130,7 @@ async function punti(data) {
   }
   for (var i = 0; i < Math.min(points.length, 2); i++) {
     for (var j = 0; j < points[i].length; j++) {
-      parentP.children[i].children[j].textContent = `${points[i][j].punti} ${points[i][j].surname} ${points[i][j].firstname}`;
+      parentP.children[i].children[j].textContent = caricaGiocatore2(points[i][j]);
       if (points[i][j].disp_name2 == 'Bolghera') {
         parentP.children[i].children[j].className = 'bold';
       }

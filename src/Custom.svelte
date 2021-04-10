@@ -77,7 +77,7 @@
     await getSourcesList();
     await getEffects();
     await rotations();
-    await showPoints();
+    setInterval(showPoints, 5 * 60 * 1000); // 5 minuti
   }
 
   async function fixBrowsers(names) {
@@ -220,7 +220,6 @@
     if (points.length) {
       obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'punti', points: points } });
     }
-    setTimeout(showPoints, 5 * 60 * 1000); // 5 minuti
   }
 
   async function openModal1() {
@@ -581,6 +580,11 @@
       </div>
       <div class="tile is-parent">
         <a on:click={resetPopup} class:is-warning={popupVisible} class={defaultClasses + 'is-info reset'}> Reset </a>
+      </div>
+    </div>
+    <div class="tile is-ancestor">
+      <div class="tile is-parent">
+        <a on:click={showPoints} class={defaultClasses + 'is-info'}>Mostra Punti</a>
       </div>
     </div>
     {#each effectSourcesC as chunk}
