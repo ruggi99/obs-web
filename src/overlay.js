@@ -33,7 +33,6 @@ addEventListener('load', async function () {
     parentP.appendChild(child);
     for (var j = 0; j < 4; j++) {
       var child2 = document.createElement('div');
-      //child2.textContent = '10 Cognome Nome';
       child.appendChild(child2);
     }
   }

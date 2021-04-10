@@ -65,6 +65,10 @@ body > div:nth-of-type(1) {
   margin-bottom: -40px;
 }
 
+.parentP.visible {
+  box-shadow: 0 0 10px rgba(255, 128, 0, 0.75);
+}
+
 .parentP.secondo > :first-child {
   margin-top: -40px;
 }
