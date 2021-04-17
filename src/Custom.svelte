@@ -64,7 +64,7 @@
     var names = await fetch('names.json')
       .then((r) => r.json())
       .catch((e) => []);
-    if (!match) return;
+    if (match.length === 0) return;
     var squadra1 = match.incasa ? match.hteam : match.vteam;
     var squadra2 = match.incasa ? match.vteam : match.hteam;
     var idSquadra1 = squadra1.id;
