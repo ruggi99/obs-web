@@ -19,7 +19,7 @@
   // State
   let activeTab = 0;
 
-  let nameSquadra1,
+  let nameSquadra1 = '',
     nameSquadra2 = '';
   let match = {};
 
@@ -64,20 +64,21 @@
     var names = await fetch('names.json')
       .then((r) => r.json())
       .catch((e) => []);
-    if (match.length === 0) return;
-    var squadra1 = match.incasa ? match.hteam : match.vteam;
-    var squadra2 = match.incasa ? match.vteam : match.hteam;
-    var idSquadra1 = squadra1.id;
-    var idSquadra2 = squadra2.id;
-    nameSquadra1 = names[idSquadra1] || squadra1.disp_name;
-    nameSquadra2 = names[idSquadra2] || squadra2.disp_name;
-    playersSquadra1 = squadra1.players;
-    playersSquadra2 = squadra2.players;
-    await fixBrowsers(names);
+    if (match.length !== 0) {
+      var squadra1 = match.incasa ? match.hteam : match.vteam;
+      var squadra2 = match.incasa ? match.vteam : match.hteam;
+      var idSquadra1 = squadra1.id;
+      var idSquadra2 = squadra2.id;
+      nameSquadra1 = names[idSquadra1] || squadra1.disp_name;
+      nameSquadra2 = names[idSquadra2] || squadra2.disp_name;
+      playersSquadra1 = squadra1.players;
+      playersSquadra2 = squadra2.players;
+      await fixBrowsers(names);
+      await rotations();
+      setInterval(showPoints, 5 * 60 * 1000); // 5 minuti
+    }
     await getSourcesList();
     await getEffects();
-    await rotations();
-    setInterval(showPoints, 5 * 60 * 1000); // 5 minuti
   }
 
   async function fixBrowsers(names) {
