@@ -97,5 +97,6 @@ body > div:nth-of-type(1) {
 }
 
 .bold {
+  background-color: rgba(235, 118, 0, 1);
   font-weight: bold;
 }
