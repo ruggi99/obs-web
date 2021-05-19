@@ -218,7 +218,7 @@
   }
 
   async function showPoints() {
-    if (points.length) {
+    if (points.length && currentScene == '5) Stream Points') {
       obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'punti', points: points } });
     } else {
       console.log('no points');

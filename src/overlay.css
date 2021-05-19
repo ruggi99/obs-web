@@ -75,7 +75,7 @@ body > div:nth-of-type(1) {
 
 .parentP > * {
   display: flex;
-  background-color: rgba(255, 128, 0, 0.75);
+  background-color: hsla(30, 100%, 45%, 1);
   font-size: 22px;
   height: 40px;
 }
@@ -97,6 +97,6 @@ body > div:nth-of-type(1) {
 }
 
 .bold {
-  background-color: rgba(235, 118, 0, 1);
+  background-color: hsla(30, 100%, 55%, 1);
   font-weight: bold;
 }
