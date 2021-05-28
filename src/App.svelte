@@ -221,6 +221,9 @@
     await obs.disconnect();
     connected = false;
     errorMessage = 'Disconnected';
+    if (isFullScreen) {
+      toggleFullScreen();
+    }
   }
 
   async function hostkey(event) {
@@ -234,6 +237,9 @@
     connected = false;
     window.history.pushState('', document.title, window.location.pathname + window.location.search); // Remove the hash
     console.log('Connection closed');
+    if (isFullScreen) {
+      toggleFullScreen();
+    }
   });
 
   obs.on('AuthenticationSuccess', async () => {
@@ -248,6 +254,9 @@
     await sendCommand('SetHeartbeat', { enable: production });
     await getStudioMode();
     await updateScenes();
+    if (!isFullScreen) {
+      toggleFullScreen();
+    }
   });
 
   obs.on('AuthenticationFailure', async () => {
@@ -397,11 +406,13 @@
   </div>
 </nav>
 
-<section class="section">
-  <div class="container">
-    {#if connected}
-      <Custom {obs} {currentScene} {sceneChunks} {currentPreviewScene} {isStudioMode} {setPreview} {setScene} />
-    {:else}
+{#if connected}
+  <section>
+    <Custom {obs} {currentScene} {sceneChunks} {currentPreviewScene} {isStudioMode} {setPreview} {setScene} />
+  </section>
+{:else}
+  <section class="section">
+    <div class="container">
       <h1 class="subtitle">
         Welcome to
         <strong>OBS-web</strong>
@@ -443,9 +454,9 @@
         <a href="https://github.com/Palakis/obs-websocket/releases" target="_blank">obs-websocket plugin</a>
         is installed and enabled.
       </p>
-    {/if}
-  </div>
-</section>
+    </div>
+  </section>
+{/if}
 
 <footer class="footer">
   <div class="content has-text-centered">

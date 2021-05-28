@@ -78,7 +78,6 @@ async function timeout(data) {
     // Transizione di apertura
     title.textContent = 'Timeout';
     subtitle.textContent = data.who;
-    //parent.classList.toggle('toRight', (toRight = !toRight));
     toggleVisibility(true);
   }
 }
@@ -86,7 +85,6 @@ async function timeout(data) {
 async function battuta(data) {
   title.textContent = 'Battuta';
   subtitle.textContent = caricaGiocatore(data.player);
-  //parent.classList.toggle('toRight', (toRight = !toRight));
   toggleVisibility(true);
   await sleep(5000);
   toggleVisibility(false);
@@ -164,7 +162,3 @@ obs.on('BroadcastCustomMessage', async (data) => {
       return await punti(data);
   }
 });
-
-//setTimeout(showPunti, 2000);
-
-//setTimeout(showPunti, 10 * 60 * 1000); // 10 minuti
