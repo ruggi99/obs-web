@@ -234,13 +234,14 @@
   }
 
   function replay() {
-    //playEffect('Stinger');
     startReplay();
   }
 
-  function showTimeout(sq1) {
+  async function showTimeout(sq1) {
     var name = sq1 ? nameSquadra1 : nameSquadra2;
     obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'timeout', who: name } });
+    await sleep(30000);
+    resetPopup();
   }
 
   async function showBattuta(sq1) {
