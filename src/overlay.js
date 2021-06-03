@@ -8,6 +8,7 @@ var parent = undefined;
 var parentP = undefined;
 var title = undefined;
 var subtitle = undefined;
+var table = undefined;
 
 var timeoutVisible = false;
 
@@ -28,14 +29,16 @@ addEventListener('load', async function () {
   document.title = 'Overlay';
   parentP = document.createElement('div');
   parentP.className = 'parentP';
-  for (var i = 0; i < 2; i++) {
-    var child = document.createElement('div');
-    parentP.appendChild(child);
-    for (var j = 0; j < 4; j++) {
-      var child2 = document.createElement('div');
-      child.appendChild(child2);
-    }
-  }
+  table = document.createElement('table');
+  table.innerHTML = '<thead><tr><th>Punti</th><th>Giocatore</th></tr></thead><tbody></tbody>';
+  parentP.appendChild(table);
+  Array(6)
+    .fill()
+    .forEach(() => {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td></td><td></td>';
+      table.tBodies[0].appendChild(tr);
+    });
   document.body.appendChild(parentP);
 });
 
@@ -49,14 +52,7 @@ function caricaGiocatore(player) {
 }
 
 function caricaGiocatore2(points) {
-  return `${points.punti} ${capitalize(points.surname + ' ' + points.firstname)}`;
-}
-
-function createChunk(players, quantity) {
-  return Array(Math.ceil(players.length / quantity))
-    .fill()
-    .map((_, index) => index * quantity)
-    .map((begin) => players.slice(begin, begin + quantity));
+  return `${capitalize(points.surname + ' ' + points.firstname[0])}.`;
 }
 
 async function sleep(ms) {
@@ -118,28 +114,18 @@ async function reset(data) {
 
 async function punti(data) {
   if (!data.points.length) return;
-  var points = createChunk(data.points, 4);
-  for (var i = 0; i < 2; i++) {
-    for (var j = 0; j < 4; j++) {
-      parentP.children[i].children[j].textContent = '';
-      parentP.children[i].children[j].className = '';
+  data.points.slice(0, 6).forEach(function (p, i) {
+    this.children[i].children[0].textContent = p.punti;
+    this.children[i].children[1].textContent = caricaGiocatore2(p);
+    if (p.disp_name_2 == 'Bolghera') {
+      this.children[i].children[1].className = 'bold';
+    } else {
+      this.children[i].children[1].className = '';
     }
-  }
-  for (var i = 0; i < Math.min(points.length, 2); i++) {
-    for (var j = 0; j < points[i].length; j++) {
-      parentP.children[i].children[j].textContent = caricaGiocatore2(points[i][j]);
-      if (points[i][j].disp_name2 == 'Bolghera') {
-        parentP.children[i].children[j].className = 'bold';
-      }
-    }
-  }
+  }, table.tBodies[0]);
   parentP.classList.add('visible');
   await sleep(5000);
-  parentP.classList.add('secondo');
-  await sleep(5000);
   parentP.classList.remove('visible');
-  await sleep(1000);
-  parentP.classList.remove('secondo');
 }
 
 obs.on('BroadcastCustomMessage', async (data) => {

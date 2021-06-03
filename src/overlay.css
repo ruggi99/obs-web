@@ -12,14 +12,14 @@ body {
   color: white;
 }
 
-body > * {
+/*body > * {
   flex: 0 0 auto;
 }
 
 body > div:nth-of-type(1) {
   flex: 1 1 auto;
   height: 100%;
-}
+}*/
 
 .parent {
   border: 3px solid white;
@@ -32,8 +32,11 @@ body > div:nth-of-type(1) {
   transition: 0.3s;
   width: 300px;
   transition-timing-function: cubic-bezier(0.5, -0.3, 0.8, 0.5);
-  clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%);
+  //clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%);
   z-index: -1;
+  position: fixed;
+  left: 0;
+  bottom: 0;
 }
 
 .parent > * {
@@ -41,7 +44,7 @@ body > div:nth-of-type(1) {
 }
 
 .parent.visible {
-  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+  //clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
   transition-timing-function: cubic-bezier(0.2, 0.5, 0.5, 1.3);
   margin-bottom: 10px;
 }
@@ -52,51 +55,68 @@ body > div:nth-of-type(1) {
 }
 
 .parentP {
-  height: 40px;
+  position: fixed;
+  right: 20px;
+  top: 0px;
+  transition: 0.5s;
+  transform-origin: top;
+  background-color: hsla(30, 100%, 50%, 0.75);
   overflow: hidden;
-}
-
-.parentP,
-.parentP > * {
-  transition: 0.7s;
-}
-
-.parentP:not(.visible) {
-  margin-bottom: -40px;
+  border-radius: 10px;
+  border: 2px solid white;
+  transition-timing-function: cubic-bezier(0.5, -0.3, 0.8, 0.5);
+  margin-top: -200px;
 }
 
 .parentP.visible {
-  box-shadow: 0 0 10px rgba(255, 128, 0, 0.75);
+  transition-timing-function: cubic-bezier(0.2, 0.5, 0.5, 1.3);
+  margin-top: 20px;
 }
 
-.parentP.secondo > :first-child {
-  margin-top: -40px;
-}
-
-.parentP > * {
-  display: flex;
-  background-color: hsla(30, 100%, 45%, 1);
-  font-size: 22px;
-  height: 40px;
-}
-
-.parentP > * > * {
-  width: 100%;
+.parentP table {
+  border-collapse: collapse;
   text-align: center;
-  padding: 0.2rem;
+}
+
+.parentP thead tr {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.parentP td,
+.parentP th {
+  padding: 2px 5px;
+}
+
+.parentP thead th:first-child {
   border: solid white;
-  border-width: 0 1px;
+  border-width: 0 1px 1px 0;
 }
 
-.parentP > * > :first-child {
-  border-left: none;
+.parentP thead th:last-child {
+  border: solid white;
+  border-width: 0 0 1px 1px;
 }
 
-.parentP > * :last-child {
-  border-right: none;
+.parentP tbody tr:last-child td:first-child {
+  border: solid white;
+  border-width: 1px 1px 0 0;
+}
+
+.parentP tbody tr:last-child td:last-child {
+  border: solid white;
+  border-width: 1px 0 0 1px;
+}
+
+.parentP tbody tr:not(:last-child) td:first-child {
+  border: solid white;
+  border-width: 1px 1px 1px 0;
+}
+
+.parentP tbody tr:not(:last-child) td:last-child {
+  border: solid white;
+  border-width: 1px 0 1px 1px;
 }
 
 .bold {
-  background-color: hsla(30, 100%, 55%, 1);
   font-weight: bold;
 }
