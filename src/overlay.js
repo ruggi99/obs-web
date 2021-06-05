@@ -4,6 +4,8 @@ const obs = new OBSWebSocket();
 
 import './overlay.css';
 
+const N_GIOCATORI = 8;
+
 var parent = undefined;
 var parentP = undefined;
 var title = undefined;
@@ -32,7 +34,7 @@ addEventListener('load', async function () {
   table = document.createElement('table');
   table.innerHTML = '<thead><tr><th>Punti</th><th>Giocatore</th></tr></thead><tbody></tbody>';
   parentP.appendChild(table);
-  Array(6)
+  Array(N_GIOCATORI)
     .fill()
     .forEach(() => {
       var tr = document.createElement('tr');
@@ -114,7 +116,7 @@ async function reset(data) {
 
 async function punti(data) {
   if (!data.points.length) return;
-  data.points.slice(0, 6).forEach(function (p, i) {
+  data.points.slice(0, N_GIOCATORI).forEach(function (p, i) {
     this.children[i].children[0].textContent = p.punti;
     this.children[i].children[1].textContent = caricaGiocatore2(p);
     if (p.disp_name_2 == 'Bolghera') {

@@ -65,7 +65,7 @@ body > div:nth-of-type(1) {
   border-radius: 10px;
   border: 2px solid white;
   transition-timing-function: cubic-bezier(0.5, -0.3, 0.8, 0.5);
-  margin-top: -200px;
+  margin-top: -300px;
 }
 
 .parentP.visible {
