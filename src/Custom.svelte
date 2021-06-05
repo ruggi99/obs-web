@@ -259,7 +259,6 @@
 
   async function showAce(sq1) {
     playEffect('Ace');
-    startReplay();
     if (manuale) {
       openModal(sq1);
       var res = await modalClosed();
