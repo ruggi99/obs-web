@@ -273,8 +273,22 @@
   }
 
   async function showMuro(sq1) {
-    playEffect('Monster Block'); // Set visible
-    startReplay();
+    var option = Math.floor(Math.random() * 4);
+    switch (option) {
+      case 0:
+        playEffect('Hazzard');
+        break;
+      case 1:
+        playEffect('Monster Block');
+        break;
+      case 2:
+        startReplay();
+        break;
+      case 3:
+        playEffect('Hazzard');
+        startReplay();
+        break;
+    }
     openModal(sq1);
     var res = await modalClosed();
     if (!res) return;
