@@ -126,7 +126,7 @@ async function punti(data) {
     }
   }, table.tBodies[0]);
   parentP.classList.add('visible');
-  await sleep(5000);
+  await sleep(8000);
   parentP.classList.remove('visible');
 }
 

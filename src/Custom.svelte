@@ -461,12 +461,12 @@
         </div>
         <div class="tile is-ancestor">
           <div class="tile is-parent">
-            <a on:click={showCrediti} class={defaultClasses + 'is-success'}> Crediti </a>
+            <a on:click={showPoints} class={defaultClasses + 'is-info'}>Mostra Punti</a>
           </div>
         </div>
         <div class="tile is-ancestor">
           <div class="tile is-parent">
-            <a on:click={showPoints} class={defaultClasses + 'is-info'}>Mostra Punti</a>
+            <a on:click={showCrediti} class={defaultClasses + 'is-info'}> Crediti </a>
           </div>
           <div class="tile is-parent">
             <a on:click={resetPopup} class:is-warning={popupVisible} class={defaultClasses + 'is-info reset'}> Reset </a>
