@@ -296,6 +296,20 @@
     console.log(lastSelectedId, player);
   }
 
+  async function showCrediti() {
+    await obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'custom', title: 'Telecronaca', subtitle: 'Alessandro Blasio' } });
+    await sleep(5000);
+    await obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'reset' } });
+    await sleep(600);
+    await obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'custom', title: 'Regia', subtitle: 'Ruggero Tomaselli' } });
+    await sleep(5000);
+    await obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'reset' } });
+    await sleep(600);
+    await obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'custom', title: 'Grafica', subtitle: 'Giorgia Perotti' } });
+    await sleep(5000);
+    await obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'reset' } });
+  }
+
   async function customPopup() {
     obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'custom', title: title, subtitle: subtitle } });
   }
@@ -442,27 +456,20 @@
             </a>
           </div>
           <div class="tile is-parent">
-            <a on:click={() => showAce(false)} class={defaultClasses + 'is-primary'}>
-              Ace {manuale ? '2...' : battutaSquadra2.surname}
-            </a>
-          </div>
-        </div>
-        <div class="tile is-ancestor">
-          <div class="tile is-parent">
             <a on:click={() => showMuro(true)} class={defaultClasses + 'is-primary'}> Muro 1... </a>
           </div>
-          <div class="tile is-parent">
-            <a on:click={() => showMuro(false)} class={defaultClasses + 'is-primary'}> Muro 2... </a>
-          </div>
         </div>
         <div class="tile is-ancestor">
           <div class="tile is-parent">
-            <a on:click={resetPopup} class:is-warning={popupVisible} class={defaultClasses + 'is-info reset'}> Reset </a>
+            <a on:click={showCrediti} class={defaultClasses + 'is-success'}> Crediti </a>
           </div>
         </div>
         <div class="tile is-ancestor">
           <div class="tile is-parent">
             <a on:click={showPoints} class={defaultClasses + 'is-info'}>Mostra Punti</a>
+          </div>
+          <div class="tile is-parent">
+            <a on:click={resetPopup} class:is-warning={popupVisible} class={defaultClasses + 'is-info reset'}> Reset </a>
           </div>
         </div>
       {/if}
