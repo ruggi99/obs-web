@@ -98,7 +98,7 @@ async function ace(data) {
 
 async function muro(data) {
   title.textContent = 'Muro';
-  subtitle.textContent = caricaGiocatore(data.player);
+  subtitle.textContent = data.sq;
   toggleVisibility(true);
   await sleep(5000);
   toggleVisibility(false);

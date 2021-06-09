@@ -207,7 +207,7 @@
   }
 
   async function modalClosed() {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
       addEventListener('modal-closed', () => resolve(true), { once: true });
       addEventListener('modal-cancelled', () => resolve(false), { once: true });
     });
@@ -257,43 +257,22 @@
     console.log(lastSelectedId, player);
   }
 
-  async function showAce(sq1) {
+  async function showAce() {
     playEffect('Ace');
     if (manuale) {
-      openModal(sq1);
+      openModal(true);
       var res = await modalClosed();
       if (!res) return;
-      var player = playersSquadra1.concat(playersSquadra2).find((pl) => pl.id == lastSelectedId);
+      var player = playersSquadra1.find((pl) => pl.id == lastSelectedId);
     } else {
-      var player = sq1 ? battutaSquadra1 : battutaSquadra2;
+      var player = battutaSquadra1;
     }
     obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'ace', player: player } });
-    console.log(lastSelectedId, player);
   }
 
-  async function showMuro(sq1) {
-    var option = Math.floor(Math.random() * 4);
-    switch (option) {
-      case 0:
-        playEffect('Hazzard');
-        break;
-      case 1:
-        playEffect('Monster Block');
-        break;
-      case 2:
-        startReplay();
-        break;
-      case 3:
-        playEffect('Hazzard');
-        startReplay();
-        break;
-    }
-    openModal(sq1);
-    var res = await modalClosed();
-    if (!res) return;
-    var player = playersSquadra1.concat(playersSquadra2).find((pl) => pl.id == lastSelectedId);
-    obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'muro', player: player } });
-    console.log(lastSelectedId, player);
+  async function showMuro() {
+    playEffect('Monster Block');
+    obs.send('BroadcastCustomMessage', { realm: 'overlayer', data: { type: 'muro', sq: nameSquadra1 } });
   }
 
   async function showCrediti() {
@@ -410,16 +389,6 @@
       {#if activeTab == 2}
         <div class="tile is-ancestor">
           <div class="tile is-parent">
-            <a on:click={replay} class={defaultClasses + 'is-info'} class:is-success={currentScene?.includes('Replay')}>
-              <span class="icon">
-                <Icon path={mdiRewind} />
-              </span>
-              <span> Replay </span>
-            </a>
-          </div>
-        </div>
-        <div class="tile is-ancestor">
-          <div class="tile is-parent">
             <a on:click={() => showTimeout(true)} class={defaultClasses + 'is-info'}>
               Timeout {nameSquadra1}
             </a>
@@ -451,12 +420,22 @@
         </div>
         <div class="tile is-ancestor">
           <div class="tile is-parent">
-            <a on:click={() => showAce(true)} class={defaultClasses + 'is-primary'}>
+            <a on:click={showAce} class={defaultClasses + 'is-primary'}>
               Ace {manuale ? '1...' : battutaSquadra1.surname}
             </a>
           </div>
           <div class="tile is-parent">
-            <a on:click={() => showMuro(true)} class={defaultClasses + 'is-primary'}> Muro 1... </a>
+            <a on:click={showMuro} class={defaultClasses + 'is-primary'}> Muro 1... </a>
+          </div>
+        </div>
+        <div class="tile is-ancestor">
+          <div class="tile is-parent">
+            <a on:click={replay} class={defaultClasses + 'is-info'} class:is-success={currentScene?.includes('Replay')}>
+              <span class="icon">
+                <Icon path={mdiRewind} />
+              </span>
+              <span> Replay </span>
+            </a>
           </div>
         </div>
         <div class="tile is-ancestor">
