@@ -430,17 +430,15 @@
         </div>
         <div class="tile is-ancestor">
           <div class="tile is-parent">
+            <a on:click={showPoints} class={defaultClasses + 'is-info'}>Mostra Punti</a>
+          </div>
+          <div class="tile is-parent">
             <a on:click={replay} class={defaultClasses + 'is-info'} class:is-success={currentScene?.includes('Replay')}>
               <span class="icon">
                 <Icon path={mdiRewind} />
               </span>
               <span> Replay </span>
             </a>
-          </div>
-        </div>
-        <div class="tile is-ancestor">
-          <div class="tile is-parent">
-            <a on:click={showPoints} class={defaultClasses + 'is-info'}>Mostra Punti</a>
           </div>
         </div>
         <div class="tile is-ancestor">
