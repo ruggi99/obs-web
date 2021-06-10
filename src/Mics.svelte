@@ -31,7 +31,6 @@
     var res = await obs.send('GetSourcesList');
     var sources = res.sources;
     micSources = sources.filter((s) => s.typeId == 'wasapi_input_capture').sort((a, b) => a.name.localeCompare(b.name));
-    //micSources = (await obs.send('GetSceneItemList', { sceneName: 'Audio (hidden)' })).sceneItems;
     for (var mic of micSources) {
       await getVolume(mic.name);
     }
@@ -81,8 +80,8 @@
 
   async function handleVolume(sourceName, up) {
     var mic = micSources.find((mic) => mic.name == sourceName);
-    if (!mic || (up && mic.volume > -1.0)) return;
-    await await obs.send('SetVolume', { source: mic.name, volume: up ? mic.volume + 1.0 : mic.volume - 1.0, useDecibel: true });
+    if ((up && mic.volume > -1.0) || (!up && mic.volume < 29.0)) return;
+    await obs.send('SetVolume', { source: mic.name, volume: up ? mic.volume + 1.0 : mic.volume - 1.0, useDecibel: true });
   }
 
   function micIcon(mic) {
@@ -97,10 +96,7 @@
   });
 
   obs.on('SourceMuteStateChanged', (data) => {
-    micSources = micSources.map(function (mic) {
-      if (mic.name == data.sourceName) return { ...mic, muted: data.muted };
-      return mic;
-    });
+    micSources = micSources.map((mic) => ({ ...mic, muted: (mic.name == data.sourceName ? data : mic).muted }));
   });
 
   obs.on('SourceVolumeChanged', async (data) => {
